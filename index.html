@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartLeave HK 智休假</title>
+    <!-- 引入 Tailwind CSS 快速美化介面 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans">
+    <div class="max-w-4xl mx-auto bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700">
+        
+        <!-- 頂部標題 & 語言切換 -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-emerald-400" id="title">🇭🇰 SmartLeave HK (智休假)</h1>
+                <p class="text-slate-400 text-sm mt-1" id="subtitle">香港雙視角請假攻略 & HR 人力風險預警系統</p>
+            </div>
+            <select id="langSelect" onchange="toggleLanguage()" class="mt-4 md:mt-0 bg-slate-700 text-white px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400">
+                <option value="TC">繁體中文</option>
+                <option value="EN">English</option>
+            </select>
+        </div>
+
+        <!-- 模式與年份設定 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-700/50 p-4 rounded-lg">
+            <div>
+                <label class="block text-xs text-slate-400 mb-1" id="lblMode">選擇模式</label>
+                <select id="modeSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2 rounded border border-slate-600 focus:outline-none focus:border-emerald-400">
+                    <option value="EMP" id="optEmp">🏖️ 員工模式：最強請假攻略</option>
+                    <option value="HR" id="optHR">📊 HR / 管理層模式：人力風險預警</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-400 mb-1" id="lblYear">計算年份</label>
+                <select id="yearSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2 rounded border border-slate-600 focus:outline-none focus:border-emerald-400">
+                    <option value="2026">2026 年</option>
+                    <option value="2027">2027 年</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- API 連線狀態 Banner -->
+        <div id="apiStatus" class="mb-6 p-3 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300">
+            ⏳ 正在連接香港政府 1823 API...
+        </div>
+
+        <!-- 內容展示區 -->
+        <div id="contentArea"></div>
+
+    </div>
+
+    <script>
+        // --- 1. 雙語字典設定 (i18n) ---
+        const i18n = {
+            TC: {
+                title: "🇭🇰 SmartLeave HK (智休假)",
+                subtitle: "香港雙視角請假攻略 & HR 人力風險預警系統",
+                lblMode: "選擇模式",
+                optEmp: "🏖️ 員工模式：最強請假攻略",
+                optHR: "📊 HR / 管理層模式：人力風險預警",
+                lblYear: "計算年份",
+                statusSuccess: "✅ 已成功由您的瀏覽器直連香港政府 1823 官方 API (DATA.GOV.HK)",
+                statusFallback: "ℹ️ API 阻擋，已加載本地 2026-2027 憲報公眾假期資料庫",
+                inputAL: "請輸入你想請假的天數 (AL Days):",
+                btnCalc: "🚀 開始智算",
+                cpLabel: "休假效益 CP 值",
+                hrNote: "📊 Governance Note: 密切監控連續長假期間的請假重疊率，確保業務連續性 (Business Continuity)。",
+                hrAlert2026: "⚠️ 2026 人力真空高風險期：4月3日 至 4月12日 (復活節與清明節連休)",
+                hrAlert2027: "⚠️ 2027 人力真空高風險期：3月26日 至 4月5日 (復活節與清明節連休高達 11 天)"
+            },
+            EN: {
+                title: "🇭🇰 SmartLeave HK",
+                subtitle: "Dual-View Leave Optimizer & HR Workforce Risk Index",
+                lblMode: "Operating Mode",
+                optEmp: "🏖️ Employee Mode: Leave Optimization",
+                optHR: "📊 HR / Manager Mode: Workforce Risk Alert",
+                lblYear: "Target Year",
+                statusSuccess: "✅ Direct API connection verified with HK Gov 1823 (DATA.GOV.HK)",
+                statusFallback: "ℹ️ Loaded local 2026-2027 Gazetted Holiday DB",
+                inputAL: "Enter Available AL Days:",
+                btnCalc: "🚀 Calculate SmartLeave",
+                cpLabel: "Leave Efficiency Ratio",
+                hrNote: "📊 Governance Note: Monitor peak leave requests during cross-holiday overlaps to ensure business continuity.",
+                hrAlert2026: "⚠️ 2026 High Risk Gap: Apr 3 - Apr 12 (Easter & Ching Ming)",
+                hrAlert2027: "⚠️ 2027 High Risk Gap: Mar 26 - Apr 5 (Easter & Ching Ming - 11 Days Gap)"
+            }
+        };
+
+        let currentLang = 'TC';
+
+        // --- 2. 測試連接政府 API ---
+        async function initAPI() {
+            const statusEl = document.getElementById('apiStatus');
+            try {
+                // 直接從 Client-side 呼叫 1823 API
+                const res = await fetch('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
+                if (res.ok) {
+                    statusEl.innerText = i18n[currentLang].statusSuccess;
+                    // 連線成功顯示綠色
+                    statusEl.className = "mb-6 p-3 rounded-lg text-sm bg-emerald-900/40 border border-emerald-500 text-emerald-300 font-medium tracking-wide";
+                    return;
+                }
+            } catch (e) {
+                console.log("API Fetch Error:", e);
+            }
+            // 失敗顯示藍色 (Fallback)
+            statusEl.innerText = i18n[currentLang].statusFallback;
+            statusEl.className = "mb-6 p-3 rounded-lg text-sm bg-blue-900/40 border border-blue-500 text-blue-300";
+        }
+
+        // --- 3. 語言切換邏輯 ---
+        function toggleLanguage() {
+            currentLang = document.getElementById('langSelect').value;
+            const txt = i18n[currentLang];
+            
+            document.getElementById('title').innerText = txt.title;
+            document.getElementById('subtitle').innerText = txt.subtitle;
+            document.getElementById('lblMode').innerText = txt.lblMode;
+            document.getElementById('optEmp').innerText = txt.optEmp;
+            document.getElementById('optHR').innerText = txt.optHR;
+            document.getElementById('lblYear').innerText = txt.lblYear;
+            
+            initAPI(); // 重新整理狀態列語言
+            renderUI(); // 重新整理內容區語言
+        }
+
+        // --- 4. 介面渲染邏輯 ---
+        function renderUI() {
+            const mode = document.getElementById('modeSelect').value;
+            const year = document.getElementById('yearSelect').value;
+            const txt = i18n[currentLang];
+            const content = document.getElementById('contentArea');
+
+            if (mode === 'EMP') {
+                // 員工模式介面
+                content.innerHTML = `
+                    <div class="bg-slate-700/30 p-5 rounded-lg border border-slate-700">
+                        <label class="block text-sm font-medium mb-3 text-slate-200">${txt.inputAL}</label>
+                        <div class="flex gap-4 mb-6">
+                            <input type="number" id="alInput" value="3" min="1" max="14" class="bg-slate-800 text-white px-4 py-2 rounded-lg border border-slate-600 w-32 focus:outline-none focus:border-emerald-400">
+                            <button onclick="calculate()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 rounded-lg font-medium transition shadow-lg">${txt.btnCalc}</button>
+                        </div>
+                        <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-5 mt-4"></div>
+                    </div>
+                `;
+                calculate(); // 自動計算預設值
+            } else {
+                // HR 模式介面
+                const alertMsg = year === '2026' ? txt.hrAlert2026 : txt.hrAlert2027;
+                content.innerHTML = `
+                    <div class="bg-slate-700/30 p-5 rounded-lg border border-slate-700">
+                        <div class="p-4 bg-rose-900/30 border border-rose-500 text-rose-300 rounded-lg font-medium mb-4 flex items-center shadow-inner">
+                            <span>${alertMsg}</span>
+                        </div>
+                        <div class="p-4 bg-slate-800 rounded-lg border border-slate-600">
+                            <p class="text-sm text-slate-300 leading-relaxed">${txt.hrNote}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // --- 5. 核心計算邏輯 (基於 2026/2027 憲報數據) ---
+        function calculate() {
+            const year = document.getElementById('yearSelect').value;
+            const txt = i18n[currentLang];
+            const grid = document.getElementById('resultsGrid');
+            if(!grid) return;
+
+            // 內建最優質的請假攻略數據庫
+            const strategyData = {
+                '2026': [
+                    { dates: "2026-04-03 至 04-12", off: 10, cost: 3, cp: "3.33", nameTC: "復活節與清明節", nameEN: "Easter & Ching Ming" },
+                    { dates: "2026-02-14 至 02-22", off: 9, cost: 3, cp: "3.00", nameTC: "農曆新年", nameEN: "Lunar New Year" },
+                    { dates: "2026-12-25 至 01-03", off: 10, cost: 4, cp: "2.50", nameTC: "聖誕與元旦", nameEN: "Christmas & New Year" }
+                ],
+                '2027': [
+                    { dates: "2027-03-26 至 04-05", off: 11, cost: 4, cp: "2.75", nameTC: "復活節與清明節", nameEN: "Easter & Ching Ming" },
+                    { dates: "2027-02-06 至 02-14", off: 9, cost: 3, cp: "3.00", nameTC: "農曆新年", nameEN: "Lunar New Year" },
+                    { dates: "2027-12-25 至 01-02", off: 9, cost: 3, cp: "3.00", nameTC: "聖誕與跨年", nameEN: "Christmas & New Year" }
+                ]
+            };
+
+            const alInput = parseInt(document.getElementById('alInput').value) || 0;
+            
+            // 過濾出 AL 天數足夠的方案
+            const validStrategies = strategyData[year].filter(item => item.cost <= alInput);
+
+            if (validStrategies.length === 0) {
+                grid.innerHTML = `<div class="col-span-3 text-slate-400 text-sm p-4 bg-slate-800 rounded-lg text-center border border-slate-700">目前的 AL 天數不足以組合出長假期，建議單獨請假休息！</div>`;
+                return;
+            }
+
+            // 渲染結果卡片
+            grid.innerHTML = validStrategies.map(item => `
+                <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 shadow-md hover:border-emerald-500 transition-colors duration-300">
+                    <div class="text-xs text-emerald-400 font-mono mb-2">🗓️ ${item.dates}</div>
+                    <div class="text-2xl font-bold text-white mb-3">放 ${item.off} 日 / 請 ${item.cost} 日</div>
+                    <div class="text-xs font-semibold bg-emerald-900/50 border border-emerald-700 inline-block px-2.5 py-1 rounded text-emerald-300 mb-3">
+                        ${txt.cpLabel}: ${item.cp}
+                    </div>
+                    <div class="text-sm text-slate-400">${currentLang === 'TC' ? item.nameTC : item.nameEN}</div>
+                </div>
+            `).join('');
+        }
+
+        // --- 啟動初始化 ---
+        initAPI();
+        renderUI();
+    </script>
+</body>
+</html>
