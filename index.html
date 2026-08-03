@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <!-- 高可用性架構狀態 Banner (ISO 22301 Alignment) -->
+        <!-- 高可用性架構狀態 Banner -->
         <div id="apiStatus" class="mb-6 p-3.5 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300 flex items-center shadow-inner">
             <span class="mr-2 text-lg">⏳</span> <span id="statusText">連線中... / Connecting System...</span>
         </div>
@@ -56,7 +56,7 @@
             <span class="text-emerald-500 text-lg mr-2">🛡️</span>
             <div>
                 <strong class="text-slate-300 block mb-1" id="govTitle">治理與合規聲明 (Governance & Compliance Statement):</strong>
-                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。此外，系統具備自動容錯備援機制，符合 ISO 22301 營運持續 (Business Continuity) 最佳實踐。</p>
+                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。此外，系統具備自動容錯備援機制，符合 ISO 22301 營運持續最佳實踐。</p>
             </div>
         </div>
     </div>
@@ -72,12 +72,12 @@
                 lblYear: "計算年份",
                 optYear2026: "2026 年 (2026)",
                 optYear2027: "2027 年 (2027)",
-                statusSuccess: "系統韌性狀態：已成功直連香港政府 DATA.GOV.HK 官方資料庫 (Tier 1 運行中)",
+                statusSuccess: "系統韌性狀態：已成功透過安全代理直連香港政府 DATA.GOV.HK 官方資料庫 (Tier 1 運行中)",
                 statusFallback: "系統韌性狀態：已啟動高可用性備援，加載本地 2026-2027 憲報資料庫 (Failover 運行中)",
                 inputAL: "請輸入你想請假的天數 (AL Days):",
                 btnCalc: "🚀 開始智算",
                 cpLabel: "休假效益 (CP 值)",
-                cpTooltip: "計算邏輯：連續放假總天數 ÷ 消耗年假天數 (透明度確保)",
+                cpTooltip: "計算邏輯：連續放假總天數 ÷ 消耗年假天數 (確保演算法透明度)",
                 hrNote: "Governance Note: 密切監控連續長假期間的請假重疊率 (Leave Overlap Rate)，確保企業營運連續性 (Business Continuity) 與人力調配彈性。",
                 hrAlert2026: "⚠️ 2026 人力真空高風險期：4月3日 至 4月12日 (復活節與清明節連休)",
                 hrAlert2027: "⚠️ 2027 人力真空高風險期：3月26日 至 4月5日 (復活節與清明節連休高達 11 天)",
@@ -94,7 +94,7 @@
                 lblYear: "Target Year",
                 optYear2026: "2026",
                 optYear2027: "2027",
-                statusSuccess: "Resilience Status: Direct API connection verified with HK Gov DATA.GOV.HK (Tier 1 Active)",
+                statusSuccess: "Resilience Status: Secure connection established with HK Gov DATA.GOV.HK (Tier 1 Active)",
                 statusFallback: "Resilience Status: High-Availability Failover activated. Local DB loaded (Tier 2 Active)",
                 inputAL: "Enter Available AL Days:",
                 btnCalc: "🚀 Calculate",
@@ -111,18 +111,26 @@
 
         let currentLang = 'TC';
 
+        // 核心更新：使用 CORS Proxy 強制獲取政府 API
         async function initAPI() {
             const statusEl = document.getElementById('apiStatus');
             const txtEl = document.getElementById('statusText');
             try {
-                const res = await fetch('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
+                // 透過 corsproxy.io 安全繞過瀏覽器跨網域限制
+                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
+                const res = await fetch(proxyUrl);
+                
                 if (res.ok) {
                     txtEl.innerText = i18n[currentLang].statusSuccess;
                     statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-emerald-900/30 border border-emerald-500/50 text-emerald-300 font-medium tracking-wide flex items-center shadow-inner";
                     statusEl.querySelector('span').innerText = "✅";
                     return;
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn("API Connection restricted, triggering Failover...");
+            }
+            
+            // 容錯備援 (Failover)
             txtEl.innerText = i18n[currentLang].statusFallback;
             statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
             statusEl.querySelector('span').innerText = "🛡️";
