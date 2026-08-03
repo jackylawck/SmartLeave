@@ -6,6 +6,11 @@
     <title>SmartLeave 智休假 | Ultimate EX & HR Resilience Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 隱藏滾動條但保持滑動 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans flex flex-col">
     <div class="max-w-5xl w-full mx-auto bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700 flex-grow">
@@ -45,7 +50,7 @@
             <span class="mr-2 text-lg">⏳</span> <span id="statusText">系統多重 API 連線中... / Connecting Systems...</span>
         </div>
 
-        <!-- 跨國天氣、匯率與營運韌性區塊 (EMP / HR 共用動態面板) -->
+        <!-- 氣象引擎（HKO + Open-Meteo）、匯率與營運韌性區塊 -->
         <div id="globalDashboardWidget" class="mb-6"></div>
 
         <!-- 內容展示區 -->
@@ -59,7 +64,7 @@
             <span class="text-emerald-500 text-lg mr-2">🛡️</span>
             <div>
                 <strong class="text-slate-300 block mb-1" id="govTitle">企業治理、風險管理與合規聲明 (GRC Statement):</strong>
-                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、Open-Meteo 及 Frankfurter 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 跨國營運持續 (BCM) 與 ESG (職業安全健康) 最佳實踐。</p>
+                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、香港天文台 (HKO)、Open-Meteo 及 Frankfurter 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 跨國營運持續 (BCM) 與 ESG 最佳實踐。</p>
             </div>
         </div>
     </div>
@@ -75,7 +80,7 @@
                 lblYear: "計算年份",
                 optYear2026: "2026 年",
                 optYear2027: "2027 年",
-                statusSuccess: "系統韌性狀態：已成功直連 1823, Open-Meteo 及 Frankfurter API (Tier 1 運行中)",
+                statusSuccess: "系統韌性狀態：已成功直連 1823, 天文台 HKO, Open-Meteo 及 Frankfurter API (Tier 1 運行中)",
                 statusFallback: "系統韌性狀態：外部網路受限，已啟動備援與離線快取 (Failover 運行中)",
                 inputAL: "請輸入你想請假的天數 (AL Days):",
                 btnCalc: "🚀 開始智算",
@@ -86,9 +91,9 @@
                 hrAlert2027: "⚠️ 2027 人力真空高風險期：3月26日 至 4月5日 (復活節連休高達 11 天)",
                 noResult: "目前的 AL 天數不足以組合出長假期，建議單獨請假休息！",
                 govTitle: "企業治理、風險管理與合規聲明 (GRC Statement):",
-                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、Open-Meteo 及 Frankfurter 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 跨國營運持續 (BCM) 與 ESG (職業安全健康) 最佳實踐。",
-                citySelectLabel: "🌍 選擇外遊目的地 / 跨國 Remote 據點:",
-                globalWeatherTitle: "🌐 目的地氣候與匯率指數 (Live Weather & Exchange Rate)",
+                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、香港天文台 (HKO)、Open-Meteo 及 Frankfurter 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 跨國營運持續 (BCM) 與 ESG 最佳實踐。",
+                citySelectLabel: "🌍 選擇地點 (香港本地支援天文台 HKO 直連 / 外遊預測 9 天趨勢):",
+                globalWeatherTitle: "🌐 Live Weather & Exchange Rate Index",
                 btnCalendar: "📅 匯入日曆 (ICS)",
                 esgTitle: "🏥 ESG 與物流營運韌性監控 (HR 視角)",
                 esgHealth: "傳染病與旅遊健康警示 (OSH): 季節性流感提示生效，建議提醒出差員工注意個人衛生。",
@@ -103,7 +108,7 @@
                 lblYear: "Target Year",
                 optYear2026: "2026",
                 optYear2027: "2027",
-                statusSuccess: "Resilience Status: Verified connection with 1823, Open-Meteo & Frankfurter APIs (Tier 1 Active)",
+                statusSuccess: "Resilience Status: Verified connection with 1823, HKO, Open-Meteo & Frankfurter APIs (Tier 1 Active)",
                 statusFallback: "Resilience Status: High-Availability Failover activated. Local DB & Offline Cache loaded (Tier 2 Active)",
                 inputAL: "Enter Available AL Days:",
                 btnCalc: "🚀 Calculate",
@@ -114,8 +119,8 @@
                 hrAlert2027: "⚠️ 2027 High Risk Gap: Mar 26 - Apr 5 (Easter 11 Days Peak)",
                 noResult: "AL days insufficient for long streaks. Individual rest days recommended!",
                 govTitle: "Enterprise GRC & Compliance Statement:",
-                govText: "Built on 'Privacy by Design' principles utilizing pure client-side processing. Calendar Generation (ICS) happens locally ensuring zero data leakage (ISO 27001). Integrated with 1823, Open-Meteo, and Frankfurter APIs, featuring Keyless security and offline caching, aligning with ISO 22301 BCM and ESG best practices.",
-                citySelectLabel: "🌍 Select Destination / Overseas Hub:",
+                govText: "Built on 'Privacy by Design' principles utilizing pure client-side processing. Calendar Generation (ICS) happens locally ensuring zero data leakage (ISO 27001). Integrated with 1823, HKO, Open-Meteo, and Frankfurter APIs, featuring Keyless security and offline caching, aligning with ISO 22301 BCM and ESG best practices.",
+                citySelectLabel: "🌍 Select Location (HKO Native Integration for Hong Kong / 9-Day Forecast):",
                 globalWeatherTitle: "🌐 Live Weather & Exchange Rate Index",
                 btnCalendar: "📅 Add to Calendar",
                 esgTitle: "🏥 ESG & Logistics Resilience Monitor",
@@ -125,11 +130,16 @@
         };
 
         const CITIES = [
-            { nameTC: "東京 (Tokyo)", nameEN: "Tokyo", lat: 35.6762, lng: 139.6503, currency: "JPY" },
-            { nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654, currency: "TWD" },
-            { nameTC: "倫敦 (London)", nameEN: "London", lat: 51.5074, lng: -0.1278, currency: "GBP" },
-            { nameTC: "曼谷 (Bangkok)", nameEN: "Bangkok", lat: 13.7563, lng: 100.5018, currency: "THB" },
-            { nameTC: "新加坡 (Singapore)", nameEN: "Singapore", lat: 1.3521, lng: 103.8198, currency: "SGD" }
+            { id: "HK", nameTC: "香港 (Hong Kong - 天文台 HKO)", nameEN: "Hong Kong (HKO Direct)", currency: "HKD" },
+            { id: "TYO", nameTC: "東京 (Tokyo)", nameEN: "Tokyo", lat: 35.6762, lng: 139.6503, currency: "JPY" },
+            { id: "OSA", nameTC: "大阪 (Osaka)", nameEN: "Osaka", lat: 34.6937, lng: 135.5023, currency: "JPY" },
+            { id: "TPE", nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654, currency: "TWD" },
+            { id: "SEL", nameTC: "首爾 (Seoul)", nameEN: "Seoul", lat: 37.5665, lng: 126.9780, currency: "KRW" },
+            { id: "BKK", nameTC: "曼谷 (Bangkok)", nameEN: "Bangkok", lat: 13.7563, lng: 100.5018, currency: "THB" },
+            { id: "SIN", nameTC: "新加坡 (Singapore)", nameEN: "Singapore", lat: 1.3521, lng: 103.8198, currency: "SGD" },
+            { id: "LON", nameTC: "倫敦 (London)", nameEN: "London", lat: 51.5074, lng: -0.1278, currency: "GBP" },
+            { id: "PAR", nameTC: "巴黎 (Paris)", nameEN: "Paris", lat: 48.8566, lng: 2.3522, currency: "EUR" },
+            { id: "SYD", nameTC: "雪梨 (Sydney)", nameEN: "Sydney", lat: -33.8688, lng: 151.2093, currency: "AUD" }
         ];
 
         let currentLang = 'TC';
@@ -141,12 +151,11 @@
             const txtEl = document.getElementById('statusText');
             
             try {
-                // 1. 1823 Gov API via Proxy
+                // 1823 & Frankfurter FX
                 const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
                 const res1823 = fetch(proxyUrl).catch(() => null);
                 
-                // 2. Frankfurter Exchange Rate API (Native CORS)
-                const fxUrl = 'https://api.frankfurter.app/latest?from=HKD&to=JPY,TWD,GBP,THB,SGD';
+                const fxUrl = 'https://api.frankfurter.app/latest?from=HKD&to=JPY,TWD,GBP,THB,SGD,EUR,AUD';
                 const resFx = await fetch(fxUrl).catch(() => null);
                 if (resFx && resFx.ok) {
                     const fxJson = await resFx.json();
@@ -173,26 +182,52 @@
             const txt = i18n[currentLang];
 
             if (mode === 'EMP') {
-                // Fetch Weather
-                let weatherHtml = `<div class="text-xs text-slate-400">Loading weather...</div>`;
-                try {
-                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
-                    const res = await fetch(url);
-                    if (res.ok) {
-                        const data = await res.json();
-                        weatherHtml = data.daily.time.slice(0, 3).map((t, idx) => `
-                            <div class="bg-slate-800/80 p-2 rounded border border-slate-700 text-xs text-center">
-                                <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
-                                <div class="text-slate-200">🌡️ ${data.daily.temperature_2m_min[idx]}~${data.daily.temperature_2m_max[idx]}°C</div>
-                            </div>
-                        `).join('');
-                    }
-                } catch (e) { weatherHtml = `<div class="text-xs text-slate-400">Weather data offline</div>`; }
+                let weatherHtml = `<div class="text-xs text-slate-400 p-2">Loading 9-day weather...</div>`;
 
-                // Exchange Rate Formatting
-                let rateHtml = ratesData && ratesData[city.currency] 
-                    ? `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD = ${ratesData[city.currency]} ${city.currency}</span>`
-                    : `<span class="text-slate-400 text-xs ml-2">FX Offline</span>`;
+                if (city.id === "HK") {
+                    // 1. 香港本地：調用香港天文台 HKO API
+                    try {
+                        const hkoUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=' + (currentLang === 'TC' ? 'tc' : 'en');
+                        const res = await fetch(hkoUrl);
+                        if (res.ok) {
+                            const data = await res.json();
+                            weatherHtml = data.weatherForecast.slice(0, 9).map(f => `
+                                <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
+                                    <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
+                                    <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
+                                    <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% RH</div>
+                                </div>
+                            `).join('');
+                        }
+                    } catch (e) {
+                        weatherHtml = `<div class="text-xs text-slate-400 p-2">HKO Weather Offline</div>`;
+                    }
+                } else {
+                    // 2. 海外城市：調用 Open-Meteo 全球 API
+                    try {
+                        const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+                        const res = await fetch(url);
+                        if (res.ok) {
+                            const data = await res.json();
+                            weatherHtml = data.daily.time.slice(0, 9).map((t, idx) => `
+                                <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
+                                    <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
+                                    <div class="text-slate-200">🌡️ ${data.daily.temperature_2m_min[idx]}~${data.daily.temperature_2m_max[idx]}°C</div>
+                                </div>
+                            `).join('');
+                        }
+                    } catch (e) { weatherHtml = `<div class="text-xs text-slate-400 p-2">Weather offline</div>`; }
+                }
+
+                // 匯率顯示邏輯
+                let rateHtml = "";
+                if (city.currency === "HKD") {
+                    rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">本地貨幣 (HKD)</span>`;
+                } else if (ratesData && ratesData[city.currency]) {
+                    rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD = ${ratesData[city.currency]} ${city.currency}</span>`;
+                } else {
+                    rateHtml = `<span class="text-slate-400 text-xs ml-2">FX Offline</span>`;
+                }
 
                 const cityOptions = CITIES.map((c, idx) => `
                     <option value="${idx}" ${idx === selectedCityIndex ? 'selected' : ''}>
@@ -202,7 +237,7 @@
 
                 container.innerHTML = `
                     <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 shadow-md">
-                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
                             <div>
                                 <label class="text-xs font-semibold text-slate-300 uppercase tracking-wide mr-2">${txt.citySelectLabel}</label>
                                 <select onchange="changeCity(this.value)" class="bg-slate-800 text-sm text-emerald-300 px-3 py-1.5 rounded border border-slate-600 focus:outline-none focus:border-emerald-500">
@@ -213,7 +248,8 @@
                                 <span class="text-xs text-slate-400 mr-1">💱 Live FX:</span> ${rateHtml}
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-3">
+                        <!-- 橫向滑動區塊 (展示 9 天氣溫) -->
+                        <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 pt-1">
                             ${weatherHtml}
                         </div>
                     </div>
@@ -268,7 +304,6 @@
             const formatICSDate = (dateStr) => dateStr.replace(/-/g, '') + 'T000000Z';
             const start = formatICSDate(startDate);
             
-            // ICS end date is exclusive, need to add 1 day
             let endObj = new Date(endDate);
             endObj.setDate(endObj.getDate() + 1);
             const end = endObj.toISOString().split('T')[0].replace(/-/g, '') + 'T000000Z';
@@ -390,7 +425,7 @@ END:VCALENDAR`;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'smartleave-offline-v4';
+                    const CACHE_NAME = 'smartleave-offline-v6';
                     self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
                     self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
                 `;
