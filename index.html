@@ -130,16 +130,23 @@
         };
 
         const CITIES = [
-            { id: "HK", nameTC: "香港 (Hong Kong)", nameEN: "Hong Kong", currency: "HKD" },
+            { id: "HK", nameTC: "香港 (Hong Kong)", nameEN: "Hong Kong", lat: 22.3193, lng: 114.1694, currency: "HKD" },
+            { id: "SZX", nameTC: "深圳 (Shenzhen)", nameEN: "Shenzhen", lat: 22.5431, lng: 114.0579, currency: "CNY" },
+            { id: "CAN", nameTC: "廣州 (Guangzhou)", nameEN: "Guangzhou", lat: 23.1291, lng: 113.2644, currency: "CNY" },
+            { id: "MAC", nameTC: "澳門 (Macau)", nameEN: "Macau", lat: 22.1987, lng: 113.5439, currency: "MOP" },
+            { id: "SHA", nameTC: "上海 (Shanghai)", nameEN: "Shanghai", lat: 31.2304, lng: 121.4737, currency: "CNY" },
+            { id: "PEK", nameTC: "北京 (Beijing)", nameEN: "Beijing", lat: 39.9042, lng: 116.4074, currency: "CNY" },
+            { id: "TPE", nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654, currency: "TWD" },
             { id: "TYO", nameTC: "東京 (Tokyo)", nameEN: "Tokyo", lat: 35.6762, lng: 139.6503, currency: "JPY" },
             { id: "OSA", nameTC: "大阪 (Osaka)", nameEN: "Osaka", lat: 34.6937, lng: 135.5023, currency: "JPY" },
-            { id: "TPE", nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654, currency: "TWD" },
             { id: "SEL", nameTC: "首爾 (Seoul)", nameEN: "Seoul", lat: 37.5665, lng: 126.9780, currency: "KRW" },
             { id: "BKK", nameTC: "曼谷 (Bangkok)", nameEN: "Bangkok", lat: 13.7563, lng: 100.5018, currency: "THB" },
             { id: "SIN", nameTC: "新加坡 (Singapore)", nameEN: "Singapore", lat: 1.3521, lng: 103.8198, currency: "SGD" },
             { id: "LON", nameTC: "倫敦 (London)", nameEN: "London", lat: 51.5074, lng: -0.1278, currency: "GBP" },
             { id: "PAR", nameTC: "巴黎 (Paris)", nameEN: "Paris", lat: 48.8566, lng: 2.3522, currency: "EUR" },
-            { id: "SYD", nameTC: "雪梨 (Sydney)", nameEN: "Sydney", lat: -33.8688, lng: 151.2093, currency: "AUD" }
+            { id: "SYD", nameTC: "悉尼 (Sydney)", nameEN: "Sydney", lat: -33.8688, lng: 151.2093, currency: "AUD" },
+            { id: "YVR", nameTC: "溫哥華 (Vancouver)", nameEN: "Vancouver", lat: 49.2827, lng: -123.1207, currency: "CAD" },
+            { id: "NYC", nameTC: "紐約 (New York)", nameEN: "New York", lat: 40.7128, lng: -74.0060, currency: "USD" }
         ];
 
         let currentLang = 'TC';
@@ -152,18 +159,15 @@
             const txtEl = document.getElementById('statusText');
             
             try {
-                // 1. 1823 & FX
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
-                fetch(proxyUrl).catch(() => null);
-                
-                const fxUrl = 'https://api.frankfurter.app/latest?from=HKD&to=JPY,TWD,GBP,THB,SGD,EUR,AUD';
+                // FX API
+                const fxUrl = 'https://api.frankfurter.app/latest?from=HKD&to=JPY,GBP,THB,SGD,EUR,AUD,KRW,CNY,USD,CAD';
                 const resFx = await fetch(fxUrl).catch(() => null);
                 if (resFx && resFx.ok) {
                     const fxJson = await resFx.json();
                     ratesData = fxJson.rates;
                 }
 
-                // 2. 運輸署 (TD) 交通消息
+                // 運輸署 (TD) 消息
                 const tdUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://ws.td.gov.hk/en/specialtrafficnews.xml');
                 fetch(tdUrl).then(r => r.text()).then(str => {
                     if (str && str.includes('<msgHeader>')) {
@@ -184,6 +188,27 @@
             }
         }
 
+        // 多重代理拉取香港天文台 API
+        async function fetchHKOData() {
+            const rawHkoUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=' + (currentLang === 'TC' ? 'tc' : 'en');
+            
+            // 嘗試 1: allorigins
+            try {
+                const p1 = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(rawHkoUrl);
+                const r1 = await fetch(p1);
+                if (r1.ok) return await r1.json();
+            } catch(e) {}
+
+            // 嘗試 2: corsproxy.io
+            try {
+                const p2 = 'https://corsproxy.io/?' + encodeURIComponent(rawHkoUrl);
+                const r2 = await fetch(p2);
+                if (r2.ok) return await r2.json();
+            } catch(e) {}
+
+            return null;
+        }
+
         async function renderDashboardWidget() {
             const mode = document.getElementById('modeSelect').value;
             const city = CITIES[selectedCityIndex];
@@ -194,23 +219,32 @@
                 let weatherHtml = `<div class="text-xs text-slate-400 p-2">載入 9 天天氣預報中...</div>`;
 
                 if (city.id === "HK") {
-                    try {
-                        const targetHkoUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=' + (currentLang === 'TC' ? 'tc' : 'en');
-                        const hkoProxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetHkoUrl);
-
-                        const res = await fetch(hkoProxyUrl);
-                        if (res.ok) {
-                            const data = await res.json();
-                            weatherHtml = data.weatherForecast.slice(0, 9).map(f => `
-                                <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
-                                    <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
-                                    <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
-                                    <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% 濕度</div>
-                                </div>
-                            `).join('');
+                    const hkoJson = await fetchHKOData();
+                    if (hkoJson && hkoJson.weatherForecast) {
+                        weatherHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
+                            <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
+                                <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
+                                <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
+                                <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% 濕度</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        // 雙代理皆失敗時，自動降級 (Failover) 至 Open-Meteo 獲取香港天氣，絕不顯示離線錯誤！
+                        try {
+                            const fallbackUrl = `https://api.open-meteo.com/v1/forecast?latitude=22.3193&longitude=114.1694&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
+                            const resFb = await fetch(fallbackUrl);
+                            if (resFb.ok) {
+                                const fbData = await resFb.json();
+                                weatherHtml = fbData.daily.time.slice(0, 9).map((t, idx) => `
+                                    <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
+                                        <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
+                                        <div class="text-slate-200">🌡️ ${fbData.daily.temperature_2m_min[idx]}~${fbData.daily.temperature_2m_max[idx]}°C</div>
+                                    </div>
+                                `).join('');
+                            }
+                        } catch(e) {
+                            weatherHtml = `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
                         }
-                    } catch (e) {
-                        weatherHtml = `<div class="text-xs text-slate-400 p-2">香港天氣資料暫時離線</div>`;
                     }
                 } else {
                     try {
@@ -225,7 +259,7 @@
                                 </div>
                             `).join('');
                         }
-                    } catch (e) { weatherHtml = `<div class="text-xs text-slate-400 p-2">海外天氣資料暫時離線</div>`; }
+                    } catch (e) { weatherHtml = `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`; }
                 }
 
                 let rateHtml = "";
@@ -323,7 +357,7 @@ BEGIN:VEVENT
 SUMMARY:${title} (SmartLeave)
 DTSTART:${start}
 DTEND:${end}
-DESCRIPTION:Generated by SmartLeave - Client-Side Privacy
+DESCRIPTION:由 SmartLeave 產生 (運算於本地瀏覽器，保障隱私)
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;
@@ -415,7 +449,7 @@ END:VCALENDAR`;
                         <div class="text-2xl font-bold text-white mb-2">${offDisplay}</div>
                         <div class="text-sm text-slate-400 mb-4">${nameDisplay}</div>
                     </div>
-                    <button onclick="generateICS('${nameDisplay}', '${item.start}', '${item.end}')" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-sm py-2 rounded transition-colors flex items-center justify-center gap-2">
+                    <button onclick="generateICS('${nameDisplay}', '${item.start}', '${item.end}')" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-600 text-slate-200 text-sm py-2 rounded transition-colors flex items-center justify-center gap-2 mt-4">
                         ${txt.btnCalendar}
                     </button>
                 </div>
@@ -432,7 +466,7 @@ END:VCALENDAR`;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'smartleave-offline-v9';
+                    const CACHE_NAME = 'smartleave-offline-v11';
                     self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
                     self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
                 `;
