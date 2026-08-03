@@ -34,13 +34,13 @@
             <div>
                 <label class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblYear">計算年份 (Target Year)</label>
                 <select id="yearSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
-                    <option value="2026" id="optYear2026">2026 年 (2026)</option>
-                    <option value="2027" id="optYear2027">2027 年 (2027)</option>
+                    <option value="2026" id="optYear2026">2026 年</option>
+                    <option value="2027" id="optYear2027">2027 年</option>
                 </select>
             </div>
         </div>
 
-        <!-- 高可用性架構狀態 Banner -->
+        <!-- 高可用性架構狀態 Banner (ISO 22301 Alignment) -->
         <div id="apiStatus" class="mb-6 p-3.5 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300 flex items-center shadow-inner">
             <span class="mr-2 text-lg">⏳</span> <span id="statusText">連線中... / Connecting System...</span>
         </div>
@@ -70,8 +70,8 @@
                 optEmp: "🏖️ 員工模式：最強請假攻略",
                 optHR: "📊 HR / 管理層模式：人力風險預警",
                 lblYear: "計算年份",
-                optYear2026: "2026 年 (2026)",
-                optYear2027: "2027 年 (2027)",
+                optYear2026: "2026 年",
+                optYear2027: "2027 年",
                 statusSuccess: "系統韌性狀態：已成功透過安全代理直連香港政府 DATA.GOV.HK 官方資料庫 (Tier 1 運行中)",
                 statusFallback: "系統韌性狀態：已啟動高可用性備援，加載本地 2026-2027 憲報資料庫 (Failover 運行中)",
                 inputAL: "請輸入你想請假的天數 (AL Days):",
@@ -111,13 +111,12 @@
 
         let currentLang = 'TC';
 
-        // 核心更新：使用 CORS Proxy 強制獲取政府 API
+        // 核心更新：使用更穩定的 allorigins 代理伺服器
         async function initAPI() {
             const statusEl = document.getElementById('apiStatus');
             const txtEl = document.getElementById('statusText');
             try {
-                // 透過 corsproxy.io 安全繞過瀏覽器跨網域限制
-                const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
                 const res = await fetch(proxyUrl);
                 
                 if (res.ok) {
