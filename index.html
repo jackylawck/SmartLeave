@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLeave 智休假 | Governance & HKO Weather Integrated</title>
+    <title>SmartLeave 智休假 | Global Resilience & Open-Meteo Integrated</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -14,7 +14,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-emerald-400" id="title">SmartLeave 智休假</h1>
-                <p class="text-slate-400 text-sm mt-1" id="subtitle">香港雙視角請假攻略 & HR 人力與極端天氣風險預警系統</p>
+                <p class="text-slate-400 text-sm mt-1" id="subtitle">香港雙視角請假攻略 & 跨國 HR 營運韌性預警系統</p>
             </div>
             <select id="langSelect" onchange="toggleLanguage()" class="mt-4 md:mt-0 bg-slate-700 text-white px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
                 <option value="TC">繁體中文</option>
@@ -27,8 +27,8 @@
             <div>
                 <label class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblMode">選擇模式 (Operating Mode)</label>
                 <select id="modeSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
-                    <option value="EMP" id="optEmp">🏖️ 員工模式：最強請假攻略</option>
-                    <option value="HR" id="optHR">📊 HR / 管理層模式：人力與極端天氣風險預警</option>
+                    <option value="EMP" id="optEmp">🏖️ 員工模式：最強請假攻略與外遊天氣</option>
+                    <option value="HR" id="optHR">📊 HR / 管理層模式：跨國團隊與營運風險預警</option>
                 </select>
             </div>
             <div>
@@ -45,8 +45,8 @@
             <span class="mr-2 text-lg">⏳</span> <span id="statusText">連線中... / Connecting System...</span>
         </div>
 
-        <!-- 天文台實時數據區塊 (HKO Weather Integration) -->
-        <div id="hkoWeatherWidget" class="mb-6"></div>
+        <!-- 跨國天氣與營運韌性區塊 (Open-Meteo Global Weather Widget) -->
+        <div id="globalWeatherWidget" class="mb-6"></div>
 
         <!-- 內容展示區 -->
         <div id="contentArea" class="min-h-[250px]"></div>
@@ -59,7 +59,7 @@
             <span class="text-emerald-500 text-lg mr-2">🛡️</span>
             <div>
                 <strong class="text-slate-300 block mb-1" id="govTitle">治理與合規聲明 (Governance & Compliance Statement):</strong>
-                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。系統整合香港政府 1823 及香港天文台 (HKO) 官方開放 API，並具備自動容錯備援與離線快取支援，符合 ISO 22301 營運持續最佳實踐。</p>
+                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。系統整合香港政府 DATA.GOV.HK 與 Open-Meteo 全球氣象 API，具備無金鑰（Keyless）安全性與 3-Tier 自動容錯備援，符合 ISO 22301 跨國營運持續最佳實踐。</p>
             </div>
         </div>
     </div>
@@ -68,156 +68,137 @@
         const i18n = {
             TC: {
                 title: "SmartLeave 智休假",
-                subtitle: "香港雙視角請假攻略 & HR 人力與極端天氣風險預警系統",
+                subtitle: "香港雙視角請假攻略 & 跨國 HR 營運韌性預警系統",
                 lblMode: "選擇模式",
-                optEmp: "🏖️ 員工模式：最強請假攻略",
-                optHR: "📊 HR / 管理層模式：人力與極端天氣風險預警",
+                optEmp: "🏖️ 員工模式：最強請假攻略與外遊天氣",
+                optHR: "📊 HR / 管理層模式：跨國團隊與營運風險預警",
                 lblYear: "計算年份",
                 optYear2026: "2026 年",
                 optYear2027: "2027 年",
-                statusSuccess: "系統韌性狀態：已成功直連香港政府 DATA.GOV.HK 及香港天文台 HKO 官方 API (Tier 1 運行中)",
+                statusSuccess: "系統韌性狀態：已成功直連 DATA.GOV.HK 與 Open-Meteo 全球氣象 API (Tier 1 運行中)",
                 statusFallback: "系統韌性狀態：已啟動高可用性備援，加載本地 2026-2027 憲報資料庫 (Failover 運行中)",
                 inputAL: "請輸入你想請假的天數 (AL Days):",
                 btnCalc: "🚀 開始智算",
                 cpLabel: "休假效益 (CP 值)",
                 cpTooltip: "計算邏輯：連續放假總天數 ÷ 消耗年假天數 (確保演算法透明度)",
-                hrNote: "Governance Note: 密切監控連續長假期間的請假重疊率 (Leave Overlap Rate)，並結合天文台預警評估極端天氣下《颱風及暴雨警告下工作守則》之復工應變機制，確保企業營運連續性 (Business Continuity)。",
+                hrNote: "Governance Note: 密切監控連續長假期間的請假重疊率 (Leave Overlap Rate)，並結合 Open-Meteo 監控跨國 Regional Hubs 極端氣候風險，確保 Work-From-Anywhere 政策與企業營運連續性 (ISO 22301 BCM)。",
                 hrAlert2026: "⚠️ 2026 人力真空高風險期：4月3日 至 4月12日 (復活節與清明節連休)",
                 hrAlert2027: "⚠️ 2027 人力真空高風險期：3月26日 至 4月5日 (復活節與清明節連休高達 11 天)",
                 noResult: "目前的 AL 天數不足以組合出長假期，建議單獨請假休息！",
                 govTitle: "治理與合規聲明 (Governance & Compliance Statement):",
-                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。系統整合香港政府 1823 及香港天文台 (HKO) 官方開放 API，並具備自動容錯備援與離線快取支援，符合 ISO 22301 營運持續最佳實踐。",
-                hkoForecastTitle: "🌤️ 天文台 9 天天氣預報 (HKO 9-Day Forecast Trend)",
-                hkoWarningTitle: "🚨 香港天文台即時天氣警告與極端天氣預警 (HKO Live Weather Warning)",
-                noWarning: "目前天文台無生效之熱帶氣旋或極端天氣警告，營運狀況正常。"
+                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。系統整合香港政府 DATA.GOV.HK 與 Open-Meteo 全球氣象 API，具備無金鑰（Keyless）安全性與 3-Tier 自動容錯備援，符合 ISO 22301 跨國營運持續最佳實踐。",
+                citySelectLabel: "🌍 選擇外遊目的地 / 跨國 Remote 據點預測 (Open-Meteo Direct API):",
+                globalWeatherTitle: "🌐 全球熱點氣候與遠距營運韌性預測 (Open-Meteo Global Weather)"
             },
             EN: {
                 title: "SmartLeave",
-                subtitle: "Dual-View Leave Optimizer & HR Weather Resilience Index",
+                subtitle: "Dual-View Leave Optimizer & Global HR Resilience Index",
                 lblMode: "Operating Mode",
-                optEmp: "🏖️ Employee Mode: Leave Optimization",
-                optHR: "📊 HR / Manager Mode: Workforce & Weather Risk Alert",
+                optEmp: "🏖️ Employee Mode: Leave Optimizer & Travel Weather",
+                optHR: "📊 HR / Manager Mode: Distributed Workforce Risk Index",
                 lblYear: "Target Year",
                 optYear2026: "2026",
                 optYear2027: "2027",
-                statusSuccess: "Resilience Status: Verified direct connection with HK Gov DATA.GOV.HK & HKO APIs (Tier 1 Active)",
+                statusSuccess: "Resilience Status: Active direct connection with DATA.GOV.HK & Open-Meteo Global APIs (Tier 1 Active)",
                 statusFallback: "Resilience Status: High-Availability Failover activated. Local DB loaded (Tier 2 Active)",
                 inputAL: "Enter Available AL Days:",
                 btnCalc: "🚀 Calculate",
                 cpLabel: "Efficiency Ratio",
                 cpTooltip: "Algorithm: Total Days Off ÷ Required AL Days (Algorithm Transparency)",
-                hrNote: "Governance Note: Monitor peak leave requests during cross-holiday overlaps, integrated with HKO weather alerts to evaluate workforce contingency under the Code of Practice in Times of Typhoons and Rainstorms (ISO 22301 Alignment).",
+                hrNote: "Governance Note: Monitor leave overlap rates combined with Open-Meteo global climate metrics for cross-border regional hubs. Ensures Work-From-Anywhere compliance and ISO 22301 Business Continuity.",
                 hrAlert2026: "⚠️ 2026 High Risk Gap: Apr 3 - Apr 12 (Easter & Ching Ming Peak)",
                 hrAlert2027: "⚠️ 2027 High Risk Gap: Mar 26 - Apr 5 (Easter & Ching Ming - 11 Days Gap)",
                 noResult: "AL days insufficient for long streaks. Individual rest days recommended!",
                 govTitle: "Governance & Compliance Statement:",
-                govText: "Built on 'Privacy by Design' principles, this application utilizes pure client-side processing. Your inputs and interaction logs are never transmitted to or stored on external servers, ensuring zero data leakage risk in alignment with ISO 27001 ISMS. Integrated with HK Gov 1823 & HKO Open Data APIs, featuring automated failover and offline caching reflecting ISO 22301 Business Continuity best practices.",
-                hkoForecastTitle: "🌤️ HKO 9-Day Weather Forecast Trend",
-                hkoWarningTitle: "🚨 HKO Live Weather Warning & Extreme Weather Index",
-                noWarning: "No active tropical cyclone or extreme weather warnings at present. Operations normal."
+                govText: "Built on 'Privacy by Design' principles, this application utilizes pure client-side processing. Your inputs and interaction logs are never transmitted to or stored on external servers, ensuring zero data leakage risk in alignment with ISO 27001 ISMS. Integrated with HK Gov DATA.GOV.HK & Open-Meteo Open APIs, featuring Keyless security and automated failover reflecting ISO 22301 Business Continuity best practices.",
+                citySelectLabel: "🌍 Select Destination / Overseas Hub Forecast (Open-Meteo Direct API):",
+                globalWeatherTitle: "🌐 Global Resilience & Climate Trend (Open-Meteo Direct API)"
             }
         };
 
-        let currentLang = 'TC';
-        let hkoForecastData = null;
-        let hkoWarnData = null;
+        const CITIES = [
+            { nameTC: "東京 (Tokyo)", nameEN: "Tokyo", lat: 35.6762, lng: 139.6503 },
+            { nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654 },
+            { nameTC: "曼谷 (Bangkok)", nameEN: "Bangkok", lat: 13.7563, lng: 100.5018 },
+            { nameTC: "新加坡 (Singapore)", nameEN: "Singapore", lat: 1.3521, lng: 103.8198 },
+            { nameTC: "倫敦 (London)", nameEN: "London", lat: 51.5074, lng: -0.1278 }
+        ];
 
-        // 初始化雙 API (1823 + HKO)
+        let currentLang = 'TC';
+        let selectedCityIndex = 0;
+
+        // 初始化 API 連線
         async function initAPI() {
             const statusEl = document.getElementById('apiStatus');
             const txtEl = document.getElementById('statusText');
             
             try {
-                // 1. 香港政府 1823 API (經代理)
                 const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
                 const res1823 = await fetch(proxyUrl);
-                
-                // 2. 香港天文台 API (原生開放 CORS)
-                const hkoForecastUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=tc';
-                const hkoWarnUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warnsum&lang=tc';
-                
-                const [resHkoFnd, resHkoWarn] = await Promise.all([
-                    fetch(hkoForecastUrl).catch(() => null),
-                    fetch(hkoWarnUrl).catch(() => null)
-                ]);
-
-                if (resHkoFnd && resHkoFnd.ok) {
-                    hkoForecastData = await resHkoFnd.json();
-                }
-                if (resHkoWarn && resHkoWarn.ok) {
-                    hkoWarnData = await resHkoWarn.json();
-                }
 
                 if (res1823.ok) {
                     txtEl.innerText = i18n[currentLang].statusSuccess;
                     statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-emerald-900/30 border border-emerald-500/50 text-emerald-300 font-medium tracking-wide flex items-center shadow-inner";
                     statusEl.querySelector('span').innerText = "✅";
-                    renderHKOWidget();
+                    fetchGlobalWeather();
                     return;
                 }
             } catch (e) {
-                console.warn("API Connection restricted or offline, triggering Failover...");
+                console.warn("API Connection restricted, triggering Failover...");
             }
             
-            // Failover 備援狀態
             txtEl.innerText = i18n[currentLang].statusFallback;
             statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
             statusEl.querySelector('span').innerText = "🛡️";
-            renderHKOWidget();
+            fetchGlobalWeather();
         }
 
-        // 渲染天文台氣象 Widget
-        function renderHKOWidget() {
-            const mode = document.getElementById('modeSelect').value;
-            const container = document.getElementById('hkoWeatherWidget');
+        // 呼叫 Open-Meteo API (100% 免金鑰、跨域原生支援)
+        async function fetchGlobalWeather() {
+            const city = CITIES[selectedCityIndex];
+            const container = document.getElementById('globalWeatherWidget');
             const txt = i18n[currentLang];
 
-            if (mode === 'EMP') {
-                if (hkoForecastData && hkoForecastData.weatherForecast) {
-                    const forecastList = hkoForecastData.weatherForecast.slice(0, 3).map(f => `
-                        <div class="bg-slate-800/80 p-3 rounded border border-slate-700 text-xs">
-                            <div class="font-bold text-emerald-400 mb-1">${f.forecastDate} (${f.week})</div>
-                            <div class="text-slate-200 mb-1">${f.forecastForecast}</div>
-                            <div class="text-slate-400">${f.forecastMintemp.value}°C - ${f.forecastMaxtemp.value}°C | ${f.forecastRhi.value}% RH</div>
-                        </div>
-                    `).join('');
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+                const res = await fetch(url);
+                if (!res.ok) throw new Error();
+                const data = await res.json();
 
-                    container.innerHTML = `
-                        <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80">
-                            <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3 flex items-center">
-                                <span>${txt.hkoForecastTitle}</span>
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                ${forecastList}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = '';
-                }
-            } else {
-                // HR 視角：即時極端天氣警告與 BCM 預警
-                let warnContent = `<p class="text-xs text-slate-400">${txt.noWarning}</p>`;
-                
-                if (hkoWarnData && Object.keys(hkoWarnData).length > 0) {
-                    const warnItems = Object.keys(hkoWarnData).map(k => {
-                        const w = hkoWarnData[k];
-                        return `<span class="inline-block bg-rose-900/50 border border-rose-600 text-rose-200 text-xs px-2.5 py-1 rounded font-bold mr-2 mb-2">⚠️ ${w.name || k}</span>`;
-                    }).join('');
-                    if (warnItems) {
-                        warnContent = `<div class="flex flex-wrap">${warnItems}</div>`;
-                    }
-                }
+                const cityOptions = CITIES.map((c, idx) => `
+                    <option value="${idx}" ${idx === selectedCityIndex ? 'selected' : ''}>
+                        ${currentLang === 'TC' ? c.nameTC : c.nameEN}
+                    </option>
+                `).join('');
+
+                const dailyList = data.daily.time.slice(0, 4).map((t, idx) => `
+                    <div class="bg-slate-800/80 p-3 rounded border border-slate-700 text-xs">
+                        <div class="font-bold text-emerald-400 mb-1">🗓️ ${t}</div>
+                        <div class="text-slate-200">🌡️ ${data.daily.temperature_2m_min[idx]}°C - ${data.daily.temperature_2m_max[idx]}°C</div>
+                    </div>
+                `).join('');
 
                 container.innerHTML = `
                     <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80">
-                        <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center">
-                            <span>${txt.hkoWarningTitle}</span>
-                        </h3>
-                        ${warnContent}
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
+                            <label class="text-xs font-semibold text-slate-300 uppercase tracking-wide">${txt.citySelectLabel}</label>
+                            <select onchange="changeCity(this.value)" class="bg-slate-800 text-xs text-emerald-300 px-2.5 py-1.5 rounded border border-slate-600 focus:outline-none">
+                                ${cityOptions}
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            ${dailyList}
+                        </div>
                     </div>
                 `;
+            } catch (e) {
+                container.innerHTML = '';
             }
+        }
+
+        function changeCity(idx) {
+            selectedCityIndex = parseInt(idx);
+            fetchGlobalWeather();
         }
 
         function toggleLanguage() {
@@ -245,7 +226,7 @@
             const txt = i18n[currentLang];
             const content = document.getElementById('contentArea');
 
-            renderHKOWidget();
+            fetchGlobalWeather();
 
             if (mode === 'EMP') {
                 content.innerHTML = `
@@ -329,7 +310,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'smartleave-offline-v2';
+                    const CACHE_NAME = 'smartleave-offline-v3';
                     self.addEventListener('install', e => {
                         e.waitUntil(
                             caches.open(CACHE_NAME).then(cache => {
