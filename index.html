@@ -56,7 +56,7 @@
             <span class="text-emerald-500 text-lg mr-2">🛡️</span>
             <div>
                 <strong class="text-slate-300 block mb-1" id="govTitle">治理與合規聲明 (Governance & Compliance Statement):</strong>
-                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。此外，系統具備自動容錯備援機制，符合 ISO 22301 營運持續最佳實踐。</p>
+                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。此外，系統具備自動容錯備援機制與離線快取支援，符合 ISO 22301 營運持續最佳實踐。</p>
             </div>
         </div>
     </div>
@@ -83,7 +83,7 @@
                 hrAlert2027: "⚠️ 2027 人力真空高風險期：3月26日 至 4月5日 (復活節與清明節連休高達 11 天)",
                 noResult: "目前的 AL 天數不足以組合出長假期，建議單獨請假休息！",
                 govTitle: "治理與合規聲明 (Governance & Compliance Statement):",
-                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。此外，系統具備自動容錯備援機制，符合 ISO 22301 營運持續最佳實踐。"
+                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)。您輸入的請假數據及操作軌跡絕不會傳送或儲存至任何外部伺服器，從架構層面確保零資料外洩風險，對齊 ISO 27001 資訊安全精神。此外，系統具備自動容錯備援機制與離線快取支援，符合 ISO 22301 營運持續最佳實踐。"
             },
             EN: {
                 title: "SmartLeave",
@@ -105,13 +105,13 @@
                 hrAlert2027: "⚠️ 2027 High Risk Gap: Mar 26 - Apr 5 (Easter & Ching Ming - 11 Days Gap)",
                 noResult: "AL days insufficient for long streaks. Individual rest days recommended!",
                 govTitle: "Governance & Compliance Statement:",
-                govText: "Built on 'Privacy by Design' principles, this application utilizes pure client-side processing. Your inputs and interaction logs are never transmitted to or stored on external servers, ensuring zero data leakage risk in alignment with ISO 27001 ISMS. Furthermore, the architecture includes automated failover mechanisms, reflecting ISO 22301 Business Continuity best practices."
+                govText: "Built on 'Privacy by Design' principles, this application utilizes pure client-side processing. Your inputs and interaction logs are never transmitted to or stored on external servers, ensuring zero data leakage risk in alignment with ISO 27001 ISMS. Furthermore, the architecture includes automated failover mechanisms and offline caching, reflecting ISO 22301 Business Continuity best practices."
             }
         };
 
         let currentLang = 'TC';
 
-        // 核心更新：使用更穩定的 allorigins 代理伺服器
+        // 核心：使用 allorigins 代理伺服器繞過 CORS 限制
         async function initAPI() {
             const statusEl = document.getElementById('apiStatus');
             const txtEl = document.getElementById('statusText');
@@ -126,7 +126,7 @@
                     return;
                 }
             } catch (e) {
-                console.warn("API Connection restricted, triggering Failover...");
+                console.warn("API Connection restricted or offline, triggering Failover...");
             }
             
             // 容錯備援 (Failover)
@@ -235,6 +235,34 @@
 
         initAPI();
         renderUI();
+    </script>
+
+    <!-- 離線快取引擎 (Offline Cache Service Worker) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'smartleave-offline-v1';
+                    self.addEventListener('install', e => {
+                        e.waitUntil(
+                            caches.open(CACHE_NAME).then(cache => {
+                                return cache.addAll(['./']);
+                            })
+                        );
+                    });
+                    self.addEventListener('fetch', e => {
+                        e.respondWith(
+                            caches.match(e.request).then(response => {
+                                return response || fetch(e.request);
+                            })
+                        );
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>
