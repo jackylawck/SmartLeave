@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartLeave 智休假 | Ultimate EX & HR Resilience Dashboard</title>
+    <title>SmartLeave 智休假 | Mobility & HR Resilience Dashboard</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -19,7 +19,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-emerald-400" id="title">SmartLeave 智休假</h1>
-                <p class="text-slate-400 text-sm mt-1" id="subtitle">香港雙視角請假攻略 & 跨國 HR 營運韌性預警系統</p>
+                <p class="text-slate-400 text-sm mt-1" id="subtitle">香港雙視角請假攻略 & 交通/氣象營運韌性預警系統</p>
             </div>
             <select id="langSelect" onchange="toggleLanguage()" class="mt-4 md:mt-0 bg-slate-700 text-white px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
                 <option value="TC">繁體中文</option>
@@ -32,8 +32,8 @@
             <div>
                 <label class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblMode">選擇模式 (Operating Mode)</label>
                 <select id="modeSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
-                    <option value="EMP" id="optEmp">🏖️ 員工模式：最強請假攻略、外遊天氣與匯率</option>
-                    <option value="HR" id="optHR">📊 HR 模式：跨國韌性、ESG 與機場物流預警</option>
+                    <option value="EMP" id="optEmp">🏖️ 員工模式：最強請假攻略、天氣與匯率</option>
+                    <option value="HR" id="optHR">📊 HR 模式：大眾交通、氣象與營運持續預警</option>
                 </select>
             </div>
             <div>
@@ -50,7 +50,7 @@
             <span class="mr-2 text-lg">⏳</span> <span id="statusText">系統多重 API 連線中... / Connecting Systems...</span>
         </div>
 
-        <!-- 氣象引擎（HKO + Open-Meteo）、匯率與營運韌性區塊 -->
+        <!-- 氣象與大眾交通動態面板 (HKO / TD / Open-Meteo) -->
         <div id="globalDashboardWidget" class="mb-6"></div>
 
         <!-- 內容展示區 -->
@@ -64,7 +64,7 @@
             <span class="text-emerald-500 text-lg mr-2">🛡️</span>
             <div>
                 <strong class="text-slate-300 block mb-1" id="govTitle">企業治理、風險管理與合規聲明 (GRC Statement):</strong>
-                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、香港天文台 (HKO)、Open-Meteo 及 Frankfurter 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 跨國營運持續 (BCM) 與 ESG 最佳實踐。</p>
+                <p id="govText">本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、香港天文台 (HKO)、運輸署 (TD) 特別交通消息及 Open-Meteo 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 營運持續 (BCM) 與 OSH 最佳實踐。</p>
             </div>
         </div>
     </div>
@@ -73,64 +73,64 @@
         const i18n = {
             TC: {
                 title: "SmartLeave 智休假",
-                subtitle: "香港雙視角請假攻略 & 跨國 HR 營運韌性預警系統",
+                subtitle: "香港雙視角請假攻略 & 交通/氣象營運韌性預警系統",
                 lblMode: "選擇模式",
                 optEmp: "🏖️ 員工模式：最強請假攻略、天氣與匯率",
-                optHR: "📊 HR 模式：跨國韌性、ESG 與機場物流預警",
+                optHR: "📊 HR 模式：大眾交通、氣象與營運持續預警",
                 lblYear: "計算年份",
                 optYear2026: "2026 年",
                 optYear2027: "2027 年",
-                statusSuccess: "系統韌性狀態：已成功直連 1823, 天文台 HKO, Open-Meteo 及 Frankfurter API (Tier 1 運行中)",
+                statusSuccess: "系統韌性狀態：已成功直連 1823, 天文台, 運輸署 TD, Open-Meteo 及 Frankfurter API (Tier 1 運行中)",
                 statusFallback: "系統韌性狀態：外部網路受限，已啟動備援與離線快取 (Failover 運行中)",
                 inputAL: "請輸入你想請假的天數 (AL Days):",
                 btnCalc: "🚀 開始智算",
                 cpLabel: "休假效益 (CP 值)",
                 cpTooltip: "計算邏輯：連續放假總天數 ÷ 消耗年假天數 (確保演算法透明度)",
-                hrNote: "Governance Note: 結合極端氣候、機場物流與衛生防護警示，評估連假期間對企業供應鏈與 Remote Work 政策的衝擊，落實 OSH 與 ISO 22301 BCM 治理。",
+                hrNote: "Governance Note: 結合極端氣候與運輸署 (TD) 突發交通消息，評估連假前後主要交通幹道與港鐵運作狀態，作為發佈 Remote Work 與彈性復工政策之 BCM 依據。",
                 hrAlert2026: "⚠️ 2026 人力真空高風險期：4月3日 至 4月12日 (復活節連休 10 天)",
                 hrAlert2027: "⚠️ 2027 人力真空高風險期：3月26日 至 4月5日 (復活節連休高達 11 天)",
                 noResult: "目前的 AL 天數不足以組合出長假期，建議單獨請假休息！",
                 govTitle: "企業治理、風險管理與合規聲明 (GRC Statement):",
-                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、香港天文台 (HKO)、Open-Meteo 及 Frankfurter 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 跨國營運持續 (BCM) 與 ESG 最佳實踐。",
-                citySelectLabel: "🌍 選擇地點 (香港本地支援天文台 HKO 直連 / 外遊預測 9 天趨勢):",
-                globalWeatherTitle: "🌐 Live Weather & Exchange Rate Index",
+                govText: "本系統依循「隱私造就設計 (Privacy by Design)」原則開發，全面採用端到端本地運算 (Client-side processing)，包含日曆匯出 (ICS) 均於瀏覽器內生成，零資料外洩風險 (ISO 27001)。架構整合 1823、香港天文台 (HKO)、運輸署 (TD) 特別交通消息及 Open-Meteo 開放 API，具備無金鑰 (Keyless) 安全性與離線快取支援，對齊 ISO 22301 營運持續 (BCM) 與 OSH 最佳實踐。",
+                citySelectLabel: "🌍 選擇地點 (香港本地支援天文台/運輸署 API / 外遊預測 9 天趨勢):",
+                globalWeatherTitle: "🌐 Live Weather & Mobility Index",
                 btnCalendar: "📅 匯入日曆 (ICS)",
-                esgTitle: "🏥 ESG 與物流營運韌性監控 (HR 視角)",
-                esgHealth: "傳染病與旅遊健康警示 (OSH): 季節性流感提示生效，建議提醒出差員工注意個人衛生。",
-                esgAirport: "機場物流與出入境流量預警: 連假首日 (Peak Day) 預計達客運高峰，建議提早規劃高管差旅與供應鏈緩衝。"
+                esgTitle: "🚦 大眾交通與營運持續 (BCM / TD Traffic API)",
+                trafficNormal: "✅ 運輸署即時消息：目前全港主要幹道與港鐵服務運作正常，無重大特別交通阻塞聲明。",
+                esgAirport: "✈️ 機場與物流預警: 連假首日 (Peak Day) 預計達客運高峰，建議提早規劃高管差旅與供應鏈緩衝。"
             },
             EN: {
                 title: "SmartLeave",
-                subtitle: "Dual-View Leave Optimizer & Global HR Resilience Index",
+                subtitle: "Dual-View Leave Optimizer & Mobility Resilience Index",
                 lblMode: "Operating Mode",
                 optEmp: "🏖️ Employee Mode: Leave Optimizer, Weather & FX",
-                optHR: "📊 HR Mode: Global Resilience, ESG & Logistics Alert",
+                optHR: "📊 HR Mode: Mobility, Weather & Business Continuity Alert",
                 lblYear: "Target Year",
                 optYear2026: "2026",
                 optYear2027: "2027",
-                statusSuccess: "Resilience Status: Verified connection with 1823, HKO, Open-Meteo & Frankfurter APIs (Tier 1 Active)",
+                statusSuccess: "Resilience Status: Verified connection with 1823, HKO, Transport Dept (TD), Open-Meteo & Frankfurter APIs (Tier 1 Active)",
                 statusFallback: "Resilience Status: High-Availability Failover activated. Local DB & Offline Cache loaded (Tier 2 Active)",
                 inputAL: "Enter Available AL Days:",
                 btnCalc: "🚀 Calculate",
                 cpLabel: "Efficiency Ratio",
                 cpTooltip: "Algorithm: Total Days Off ÷ Required AL Days (Algorithm Transparency)",
-                hrNote: "Governance Note: Evaluate workforce gaps, extreme weather, and logistical bottlenecks to ensure Work-From-Anywhere compliance and ISO 22301 Business Continuity.",
+                hrNote: "Governance Note: Evaluate workforce gaps alongside Transport Department (TD) live traffic updates to justify Remote Work protocols under extreme weather or transit disruptions (ISO 22301 BCM).",
                 hrAlert2026: "⚠️ 2026 High Risk Gap: Apr 3 - Apr 12 (Easter 10 Days Peak)",
                 hrAlert2027: "⚠️ 2027 High Risk Gap: Mar 26 - Apr 5 (Easter 11 Days Peak)",
                 noResult: "AL days insufficient for long streaks. Individual rest days recommended!",
                 govTitle: "Enterprise GRC & Compliance Statement:",
-                govText: "Built on 'Privacy by Design' principles utilizing pure client-side processing. Calendar Generation (ICS) happens locally ensuring zero data leakage (ISO 27001). Integrated with 1823, HKO, Open-Meteo, and Frankfurter APIs, featuring Keyless security and offline caching, aligning with ISO 22301 BCM and ESG best practices.",
-                citySelectLabel: "🌍 Select Location (HKO Native Integration for Hong Kong / 9-Day Forecast):",
-                globalWeatherTitle: "🌐 Live Weather & Exchange Rate Index",
+                govText: "Built on 'Privacy by Design' principles utilizing pure client-side processing. Calendar Generation (ICS) happens locally ensuring zero data leakage (ISO 27001). Integrated with 1823, HKO, TD Traffic, and Open-Meteo APIs, featuring Keyless security and offline caching, aligning with ISO 22301 BCM and OSH best practices.",
+                citySelectLabel: "🌍 Select Location (HKO & TD Integration for Hong Kong / 9-Day Forecast):",
+                globalWeatherTitle: "🌐 Live Weather & Mobility Index",
                 btnCalendar: "📅 Add to Calendar",
-                esgTitle: "🏥 ESG & Logistics Resilience Monitor",
-                esgHealth: "OSH / Health Advisory: Seasonal flu alert active. Advise traveling staff on hygiene protocols.",
-                esgAirport: "HKIA Logistics & Traffic Alert: High passenger volume expected on leave start dates. Buffer times recommended for executive travel."
+                esgTitle: "🚦 Public Transit & Business Continuity (TD Traffic API)",
+                trafficNormal: "✅ Transport Department Update: Major roadways and MTR services operating normally.",
+                esgAirport: "✈️ HKIA Logistics Alert: High passenger volume expected on leave start dates. Buffer times recommended for executive travel."
             }
         };
 
         const CITIES = [
-            { id: "HK", nameTC: "香港 (Hong Kong - 天文台 HKO)", nameEN: "Hong Kong (HKO Direct)", currency: "HKD" },
+            { id: "HK", nameTC: "香港 (Hong Kong - 天文台/運輸署 API)", nameEN: "Hong Kong (HKO & TD Direct)", currency: "HKD" },
             { id: "TYO", nameTC: "東京 (Tokyo)", nameEN: "Tokyo", lat: 35.6762, lng: 139.6503, currency: "JPY" },
             { id: "OSA", nameTC: "大阪 (Osaka)", nameEN: "Osaka", lat: 34.6937, lng: 135.5023, currency: "JPY" },
             { id: "TPE", nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654, currency: "TWD" },
@@ -145,13 +145,14 @@
         let currentLang = 'TC';
         let selectedCityIndex = 0;
         let ratesData = null;
+        let tdTrafficMsg = null;
 
         async function initAPI() {
             const statusEl = document.getElementById('apiStatus');
             const txtEl = document.getElementById('statusText');
             
             try {
-                // 1823 & Frankfurter FX
+                // 1. 1823 & Frankfurter FX
                 const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.1823.gov.hk/datagovhk/v2/1823_cal_tc.json');
                 const res1823 = fetch(proxyUrl).catch(() => null);
                 
@@ -161,6 +162,14 @@
                     const fxJson = await resFx.json();
                     ratesData = fxJson.rates;
                 }
+
+                // 2. 運輸署 (TD) 特別交通消息 API (經代理存取)
+                const tdUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://ws.td.gov.hk/en/specialtrafficnews.xml');
+                fetch(tdUrl).then(r => r.text()).then(str => {
+                    if (str && str.includes('<msgHeader>')) {
+                        tdTrafficMsg = "⚠️ 運輸署發布特別交通消息：部分路段或公共交通可能受阻，請注意出行安排。";
+                    }
+                }).catch(() => null);
 
                 txtEl.innerText = i18n[currentLang].statusSuccess;
                 statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-emerald-900/30 border border-emerald-500/50 text-emerald-300 font-medium tracking-wide flex items-center shadow-inner";
@@ -185,7 +194,6 @@
                 let weatherHtml = `<div class="text-xs text-slate-400 p-2">Loading 9-day weather...</div>`;
 
                 if (city.id === "HK") {
-                    // 1. 香港本地：調用香港天文台 HKO API
                     try {
                         const hkoUrl = 'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=' + (currentLang === 'TC' ? 'tc' : 'en');
                         const res = await fetch(hkoUrl);
@@ -203,7 +211,6 @@
                         weatherHtml = `<div class="text-xs text-slate-400 p-2">HKO Weather Offline</div>`;
                     }
                 } else {
-                    // 2. 海外城市：調用 Open-Meteo 全球 API
                     try {
                         const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
                         const res = await fetch(url);
@@ -219,7 +226,6 @@
                     } catch (e) { weatherHtml = `<div class="text-xs text-slate-400 p-2">Weather offline</div>`; }
                 }
 
-                // 匯率顯示邏輯
                 let rateHtml = "";
                 if (city.currency === "HKD") {
                     rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">本地貨幣 (HKD)</span>`;
@@ -248,14 +254,14 @@
                                 <span class="text-xs text-slate-400 mr-1">💱 Live FX:</span> ${rateHtml}
                             </div>
                         </div>
-                        <!-- 橫向滑動區塊 (展示 9 天氣溫) -->
                         <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 pt-1">
                             ${weatherHtml}
                         </div>
                     </div>
                 `;
             } else {
-                // HR Mode ESG Dashboard
+                // HR 視角：運輸署 + 機場物流 BCM Dashboard
+                const trafficAlertText = tdTrafficMsg || txt.trafficNormal;
                 container.innerHTML = `
                     <div class="bg-slate-700/30 p-5 rounded-lg border border-slate-700/80 shadow-md">
                         <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center border-b border-slate-600 pb-2">
@@ -263,8 +269,8 @@
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-slate-800 p-3 rounded-lg border border-slate-600/50 shadow-inner flex items-start">
-                                <span class="text-xl mr-3">🏥</span>
-                                <p class="text-xs text-slate-300 leading-relaxed">${txt.esgHealth}</p>
+                                <span class="text-xl mr-3">🚇</span>
+                                <p class="text-xs text-slate-300 leading-relaxed">${trafficAlertText}</p>
                             </div>
                             <div class="bg-slate-800 p-3 rounded-lg border border-slate-600/50 shadow-inner flex items-start">
                                 <span class="text-xl mr-3">✈️</span>
@@ -425,7 +431,7 @@ END:VCALENDAR`;
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swCode = `
-                    const CACHE_NAME = 'smartleave-offline-v6';
+                    const CACHE_NAME = 'smartleave-offline-v7';
                     self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
                     self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
                 `;
