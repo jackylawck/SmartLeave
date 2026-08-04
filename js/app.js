@@ -1,5 +1,5 @@
 /**
- * SmartLeave Main Application Logic (Fixed Async Render Bug)
+ * SmartLeave Main Application Logic (Resilient Architecture)
  */
 
 let currentLang = 'TC';
@@ -7,13 +7,12 @@ let selectedCityIndex = 0;
 let ratesData = null;
 let tdTrafficMsg = null;
 
-// 初始化 API 數據，完成後才渲染畫面
+// 初始化 API 數據
 async function initAPI() {
     const statusEl = document.getElementById('apiStatus');
     const txtEl = document.getElementById('statusText');
     
     try {
-        // 並行加載 FX 與 運輸署 API
         const [rates, tdMsg] = await Promise.all([
             fetchExchangeRates(),
             fetchTDTrafficNews()
@@ -33,64 +32,23 @@ async function initAPI() {
             statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
             statusEl.querySelector('span').innerText = "🛡️";
         }
+    } finally {
+        renderUI();
     }
-
-    // API 載入完畢後，執行第一次介面渲染
-    renderUI();
 }
 
-// 渲染天氣與交通 Dashboard Widget
+// 渲染天氣與交通 Dashboard
 async function renderDashboardWidget() {
-    const mode = document.getElementById('modeSelect').value;
-    const city = CITIES[selectedCityIndex];
+    const modeEl = document.getElementById('modeSelect');
     const container = document.getElementById('globalDashboardWidget');
+    if (!modeEl || !container) return;
+
+    const mode = modeEl.value;
+    const city = CITIES[selectedCityIndex];
     const txt = i18n[currentLang];
 
-    if (!container) return;
-
     if (mode === 'EMP') {
-        container.innerHTML = `<div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 text-xs text-slate-400">載入 9 天天氣預報中...</div>`;
-
-        let weatherHtml = "";
-
-        if (city.id === "HK") {
-            const hkoJson = await fetchHKOWeather(currentLang);
-            if (hkoJson && hkoJson.weatherForecast) {
-                weatherHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
-                    <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
-                        <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
-                        <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
-                        <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% 濕度</div>
-                    </div>
-                `).join('');
-            } else {
-                // Failover 至 Open-Meteo
-                const fbData = await fetchOpenMeteoWeather(22.3193, 114.1694);
-                if (fbData && fbData.daily) {
-                    weatherHtml = fbData.daily.time.slice(0, 9).map((t, idx) => `
-                        <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
-                            <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
-                            <div class="text-slate-200">🌡️ ${fbData.daily.temperature_2m_min[idx]}~${fbData.daily.temperature_2m_max[idx]}°C</div>
-                        </div>
-                    `).join('');
-                } else {
-                    weatherHtml = `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
-                }
-            }
-        } else {
-            const omData = await fetchOpenMeteoWeather(city.lat, city.lng);
-            if (omData && omData.daily) {
-                weatherHtml = omData.daily.time.slice(0, 9).map((t, idx) => `
-                    <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
-                        <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
-                        <div class="text-slate-200">🌡️ ${omData.daily.temperature_2m_min[idx]}~${omData.daily.temperature_2m_max[idx]}°C</div>
-                    </div>
-                `).join('');
-            } else {
-                weatherHtml = `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
-            }
-        }
-
+        // 先渲染選單外殼，防止畫面空白
         let rateHtml = "";
         if (city.currency === "HKD") {
             rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">港幣 (HKD)</span>`;
@@ -119,11 +77,53 @@ async function renderDashboardWidget() {
                         <span class="text-xs text-slate-400 mr-1">💱 參考匯率:</span> ${rateHtml}
                     </div>
                 </div>
-                <div class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 pt-1">
-                    ${weatherHtml}
+                <div id="weatherScrollBox" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 pt-1">
+                    <div class="text-xs text-slate-400 p-2">載入 9 天天氣預報中...</div>
                 </div>
             </div>
         `;
+
+        // 異步抓取並填入天氣
+        const scrollBox = document.getElementById('weatherScrollBox');
+        let weatherHtml = "";
+
+        if (city.id === "HK") {
+            const hkoJson = await fetchHKOWeather(currentLang);
+            if (hkoJson && hkoJson.weatherForecast) {
+                weatherHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
+                    <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
+                        <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
+                        <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
+                        <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% 濕度</div>
+                    </div>
+                `).join('');
+            } else {
+                const fbData = await fetchOpenMeteoWeather(22.3193, 114.1694);
+                if (fbData && fbData.daily) {
+                    weatherHtml = fbData.daily.time.slice(0, 9).map((t, idx) => `
+                        <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
+                            <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
+                            <div class="text-slate-200">🌡️ ${fbData.daily.temperature_2m_min[idx]}~${fbData.daily.temperature_2m_max[idx]}°C</div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } else {
+            const omData = await fetchOpenMeteoWeather(city.lat, city.lng);
+            if (omData && omData.daily) {
+                weatherHtml = omData.daily.time.slice(0, 9).map((t, idx) => `
+                    <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
+                        <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
+                        <div class="text-slate-200">🌡️ ${omData.daily.temperature_2m_min[idx]}~${omData.daily.temperature_2m_max[idx]}°C</div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        if (scrollBox) {
+            scrollBox.innerHTML = weatherHtml || `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
+        }
+
     } else {
         const trafficAlertText = tdTrafficMsg || txt.trafficNormal;
         container.innerHTML = `
@@ -152,7 +152,10 @@ function changeCity(idx) {
 }
 
 function toggleLanguage() {
-    currentLang = document.getElementById('langSelect').value;
+    const langSelect = document.getElementById('langSelect');
+    if (!langSelect) return;
+
+    currentLang = langSelect.value;
     const txt = i18n[currentLang];
     
     document.getElementById('title').innerText = txt.title;
@@ -169,7 +172,6 @@ function toggleLanguage() {
     renderUI(); 
 }
 
-// 產生 ICS 日曆檔案 (Pure Client-Side)
 function generateICS(title, startDate, endDate) {
     const formatICSDate = (dateStr) => dateStr.replace(/-/g, '') + 'T000000Z';
     const start = formatICSDate(startDate);
@@ -201,10 +203,14 @@ END:VCALENDAR`;
 }
 
 function renderUI() {
-    const mode = document.getElementById('modeSelect').value;
-    const year = document.getElementById('yearSelect').value;
-    const txt = i18n[currentLang];
+    const modeEl = document.getElementById('modeSelect');
+    const yearEl = document.getElementById('yearSelect');
     const content = document.getElementById('contentArea');
+    if (!modeEl || !yearEl || !content) return;
+
+    const mode = modeEl.value;
+    const year = yearEl.value;
+    const txt = i18n[currentLang];
 
     renderDashboardWidget();
 
@@ -237,10 +243,12 @@ function renderUI() {
 }
 
 function calculate() {
-    const year = document.getElementById('yearSelect').value;
-    const txt = i18n[currentLang];
+    const yearEl = document.getElementById('yearSelect');
     const grid = document.getElementById('resultsGrid');
-    if(!grid) return;
+    if(!yearEl || !grid) return;
+
+    const year = yearEl.value;
+    const txt = i18n[currentLang];
 
     const strategyData = {
         '2026': [
@@ -286,11 +294,11 @@ function calculate() {
     }).join('');
 }
 
-// 離線快取 Service Worker
+// Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         const swCode = `
-            const CACHE_NAME = 'smartleave-offline-v13';
+            const CACHE_NAME = 'smartleave-offline-v15';
             self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
             self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
         `;
@@ -299,5 +307,7 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// 啟動應用程式
-initAPI();
+// 確保 DOM 載入後才初始化啟動
+document.addEventListener('DOMContentLoaded', () => {
+    initAPI();
+});
