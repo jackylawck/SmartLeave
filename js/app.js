@@ -1,5 +1,5 @@
 /**
- * SmartLeave Main Application Logic
+ * SmartLeave Main Application Logic (Fixed Async Render Bug)
  */
 
 let currentLang = 'TC';
@@ -7,7 +7,7 @@ let selectedCityIndex = 0;
 let ratesData = null;
 let tdTrafficMsg = null;
 
-// 初始化 API
+// 初始化 API 數據，完成後才渲染畫面
 async function initAPI() {
     const statusEl = document.getElementById('apiStatus');
     const txtEl = document.getElementById('statusText');
@@ -22,28 +22,36 @@ async function initAPI() {
         ratesData = rates;
         tdTrafficMsg = tdMsg;
 
-        txtEl.innerText = i18n[currentLang].statusSuccess;
-        statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-emerald-900/30 border border-emerald-500/50 text-emerald-300 font-medium tracking-wide flex items-center shadow-inner";
-        statusEl.querySelector('span').innerText = "✅";
-        renderDashboardWidget();
-        
+        if (statusEl && txtEl) {
+            txtEl.innerText = i18n[currentLang].statusSuccess;
+            statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-emerald-900/30 border border-emerald-500/50 text-emerald-300 font-medium tracking-wide flex items-center shadow-inner";
+            statusEl.querySelector('span').innerText = "✅";
+        }
     } catch (e) {
-        txtEl.innerText = i18n[currentLang].statusFallback;
-        statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
-        statusEl.querySelector('span').innerText = "🛡️";
-        renderDashboardWidget();
+        if (statusEl && txtEl) {
+            txtEl.innerText = i18n[currentLang].statusFallback;
+            statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
+            statusEl.querySelector('span').innerText = "🛡️";
+        }
     }
+
+    // API 載入完畢後，執行第一次介面渲染
+    renderUI();
 }
 
-// 渲染天氣與交通 Dashboard
+// 渲染天氣與交通 Dashboard Widget
 async function renderDashboardWidget() {
     const mode = document.getElementById('modeSelect').value;
     const city = CITIES[selectedCityIndex];
     const container = document.getElementById('globalDashboardWidget');
     const txt = i18n[currentLang];
 
+    if (!container) return;
+
     if (mode === 'EMP') {
-        let weatherHtml = `<div class="text-xs text-slate-400 p-2">載入 9 天天氣預報中...</div>`;
+        container.innerHTML = `<div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 text-xs text-slate-400">載入 9 天天氣預報中...</div>`;
+
+        let weatherHtml = "";
 
         if (city.id === "HK") {
             const hkoJson = await fetchHKOWeather(currentLang);
@@ -158,7 +166,6 @@ function toggleLanguage() {
     document.getElementById('govTitle').innerText = txt.govTitle;
     document.getElementById('govText').innerText = txt.govText;
     
-    renderDashboardWidget();
     renderUI(); 
 }
 
@@ -283,7 +290,7 @@ function calculate() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         const swCode = `
-            const CACHE_NAME = 'smartleave-offline-v12';
+            const CACHE_NAME = 'smartleave-offline-v13';
             self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
             self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
         `;
@@ -294,4 +301,3 @@ if ('serviceWorker' in navigator) {
 
 // 啟動應用程式
 initAPI();
-renderUI();
