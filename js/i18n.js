@@ -6,13 +6,13 @@ const i18n = {
         title: "SmartLeave 智休假",
         subtitle: "香港請假攻略 & 天氣交通出行助手",
         lblMode: "使用身份",
-        optEmp: "🏖️ 員工：請假攻略、天氣與匯率",
-        optHR: "📊 HR / 管理層：連假人手與交通提醒",
+        optEmp: "🏖️ 員工：請假攻略、天氣、交通與健康提示",
+        optHR: "📊 HR / 管理層：連假人手與營運持續提醒",
         lblYear: "目標年份",
         optYear2026: "2026 年",
         optYear2027: "2027 年",
-        statusSuccess: "系統狀態：已連線至香港政府 1823、天文台、運輸署及全球天氣匯率資料庫",
-        statusFallback: "系統狀態：目前為離線模式，已載入預存的 2026-2027 假期資料",
+        statusSuccess: "系統狀態：已連線至香港政府 1823、天文台、運輸署及全球氣象資料庫",
+        statusFallback: "系統狀態：目前為離線模式，已載入預存假期與備用匯率資料",
         inputAL: "請輸入你想請假的天數 (年假 AL):",
         btnCalc: "🚀 計算請假方案",
         cpLabel: "划算指數 (CP值)",
@@ -26,21 +26,22 @@ const i18n = {
         citySelectLabel: "🌍 目的地預測 (未來 9 天天氣趨勢):",
         globalWeatherTitle: "🌐 天氣與匯率動態",
         btnCalendar: "📅 加入手機日曆 (.ics)",
-        esgTitle: "🚦 交通與出行狀況",
+        esgTitle: "🚦 交通與健康出行提示",
         trafficNormal: "✅ 運輸署即時消息：目前全港主要幹道及港鐵服務正常。",
-        esgAirport: "✈️ 機場提示: 連假首日為出行高峰，建議提早到達機場。"
+        esgAirport: "✈️ 機場提示: 連假首日為出行高峰，建議提早 3 小時到達機場。",
+        healthAdvisory: "🏥 衛生健康提醒：季節性流感與旅遊健康警示生效，出遊請注意個人衛生與防護。"
     },
     EN: {
         title: "SmartLeave",
         subtitle: "HK Leave Optimizer & Travel Assistant",
         lblMode: "I am an...",
-        optEmp: "🏖️ Employee: Leave Guide, Weather & FX",
-        optHR: "📊 HR / Manager: Leave Overlap & Traffic Alerts",
+        optEmp: "🏖️ Employee: Leave Guide, Weather, Transit & Health Alerts",
+        optHR: "📊 HR / Manager: Workforce Gap & BCM Alerts",
         lblYear: "Target Year",
         optYear2026: "2026",
         optYear2027: "2027",
         statusSuccess: "System Status: Connected to HK Gov 1823, HKO, Transport Dept & Global APIs",
-        statusFallback: "System Status: Offline mode active. Loaded pre-saved 2026-2027 holiday database",
+        statusFallback: "System Status: Offline mode active. Loaded pre-saved holiday & exchange rates database",
         inputAL: "Enter AL Days you want to use:",
         btnCalc: "🚀 Calculate Best Leave",
         cpLabel: "Value Ratio",
@@ -54,9 +55,10 @@ const i18n = {
         citySelectLabel: "🌍 Select Destination (9-Day Forecast Trend):",
         globalWeatherTitle: "🌐 Live Weather & Exchange Rate",
         btnCalendar: "📅 Add to Calendar (.ics)",
-        esgTitle: "🚦 Transit & Travel Updates",
+        esgTitle: "🚦 Transit & Health Travel Advisory",
         trafficNormal: "✅ Transport Dept Update: Major roadways and MTR operating normally.",
-        esgAirport: "✈️ Airport Advisory: High traffic expected on holiday start dates. Early arrival recommended."
+        esgAirport: "✈️ Airport Advisory: High traffic expected on holiday start dates. Early arrival recommended.",
+        healthAdvisory: "🏥 Health Advisory: Seasonal flu alert active. Maintain personal hygiene during travel."
     }
 };
 
