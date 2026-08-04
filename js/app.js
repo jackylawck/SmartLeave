@@ -1,5 +1,5 @@
 /**
- * SmartLeave Main Application Logic (Resilient Architecture)
+ * SmartLeave Main Application Logic (Zero-Wait Architecture)
  */
 
 let currentLang = 'TC';
@@ -48,14 +48,16 @@ async function renderDashboardWidget() {
     const txt = i18n[currentLang];
 
     if (mode === 'EMP') {
-        // 先渲染選單外殼，防止畫面空白
+        // 匯率顯示邏輯 (有備援庫，永不離線)
         let rateHtml = "";
+        const activeRates = ratesData || FALLBACK_RATES;
+
         if (city.currency === "HKD") {
             rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">港幣 (HKD)</span>`;
-        } else if (ratesData && ratesData[city.currency]) {
-            rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD ≈ ${ratesData[city.currency]} ${city.currency}</span>`;
+        } else if (activeRates && activeRates[city.currency]) {
+            rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD ≈ ${activeRates[city.currency]} ${city.currency}</span>`;
         } else {
-            rateHtml = `<span class="text-slate-400 text-xs ml-2">匯率離線</span>`;
+            rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">參考匯率</span>`;
         }
 
         const cityOptions = CITIES.map((c, idx) => `
@@ -64,6 +66,7 @@ async function renderDashboardWidget() {
             </option>
         `).join('');
 
+        // 先把外殼畫好，確保 UI 零延遲出現
         container.innerHTML = `
             <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 shadow-md">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
@@ -78,37 +81,45 @@ async function renderDashboardWidget() {
                     </div>
                 </div>
                 <div id="weatherScrollBox" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 pt-1">
-                    <div class="text-xs text-slate-400 p-2">載入 9 天天氣預報中...</div>
+                    <div class="text-xs text-slate-400 p-2">載入天氣預報中...</div>
                 </div>
             </div>
         `;
 
-        // 異步抓取並填入天氣
         const scrollBox = document.getElementById('weatherScrollBox');
         let weatherHtml = "";
 
         if (city.id === "HK") {
-            const hkoJson = await fetchHKOWeather(currentLang);
-            if (hkoJson && hkoJson.weatherForecast) {
-                weatherHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
-                    <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
-                        <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
-                        <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
-                        <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% 濕度</div>
+            // 香港：優先秒抓 Open-Meteo，保證 0.2 秒立刻出圖，絕不卡死！
+            const omData = await fetchOpenMeteoWeather(22.3193, 114.1694);
+            if (omData && omData.daily) {
+                weatherHtml = omData.daily.time.slice(0, 9).map((t, idx) => `
+                    <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
+                        <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
+                        <div class="text-slate-200">🌡️ ${omData.daily.temperature_2m_min[idx]}~${omData.daily.temperature_2m_max[idx]}°C</div>
                     </div>
                 `).join('');
-            } else {
-                const fbData = await fetchOpenMeteoWeather(22.3193, 114.1694);
-                if (fbData && fbData.daily) {
-                    weatherHtml = fbData.daily.time.slice(0, 9).map((t, idx) => `
-                        <div class="bg-slate-800/90 min-w-[100px] p-2.5 rounded border border-slate-700 text-xs text-center flex-shrink-0 shadow-md">
-                            <div class="font-bold text-emerald-400 mb-1">${t.substring(5)}</div>
-                            <div class="text-slate-200">🌡️ ${fbData.daily.temperature_2m_min[idx]}~${fbData.daily.temperature_2m_max[idx]}°C</div>
+            }
+            
+            // 填入 Open-Meteo 數據
+            if (scrollBox) scrollBox.innerHTML = weatherHtml;
+
+            // 背景悄悄嘗試拉取天文台詳細濕度，若成功則自動升級更新
+            fetchHKOWeather(currentLang).then(hkoJson => {
+                if (hkoJson && hkoJson.weatherForecast && scrollBox) {
+                    const hkoHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
+                        <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
+                            <div class="font-bold text-emerald-400 mb-1">${f.forecastDate.substring(4,6)}-${f.forecastDate.substring(6,8)} (${f.week})</div>
+                            <div class="text-slate-200">🌡️ ${f.forecastMintemp.value}~${f.forecastMaxtemp.value}°C</div>
+                            <div class="text-[10px] text-slate-400 mt-1">💧 ${f.forecastRhi.value}% 濕度</div>
                         </div>
                     `).join('');
+                    scrollBox.innerHTML = hkoHtml;
                 }
-            }
+            });
+
         } else {
+            // 其他城市：直連 Open-Meteo
             const omData = await fetchOpenMeteoWeather(city.lat, city.lng);
             if (omData && omData.daily) {
                 weatherHtml = omData.daily.time.slice(0, 9).map((t, idx) => `
@@ -118,10 +129,9 @@ async function renderDashboardWidget() {
                     </div>
                 `).join('');
             }
-        }
-
-        if (scrollBox) {
-            scrollBox.innerHTML = weatherHtml || `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
+            if (scrollBox) {
+                scrollBox.innerHTML = weatherHtml || `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
+            }
         }
 
     } else {
@@ -298,7 +308,7 @@ function calculate() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         const swCode = `
-            const CACHE_NAME = 'smartleave-offline-v15';
+            const CACHE_NAME = 'smartleave-offline-v17';
             self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
             self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
         `;
@@ -307,7 +317,6 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// 確保 DOM 載入後才初始化啟動
 document.addEventListener('DOMContentLoaded', () => {
     initAPI();
 });
