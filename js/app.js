@@ -1,5 +1,5 @@
 /**
- * SmartLeave Main Application Logic (Guaranteed FX & Clear Traffic View)
+ * SmartLeave Main Application Logic (Integrated Travel & Health Info for Everyone)
  */
 
 let currentLang = 'TC';
@@ -7,7 +7,6 @@ let selectedCityIndex = 0;
 let ratesData = null;
 let tdTrafficMsg = null;
 
-// 預設參考匯率庫 (保障離線時絕不顯示「匯率離線」)
 const DEFAULT_RATES = {
     HKD: 1, CNY: 0.92, MOP: 1.03, TWD: 4.12, JPY: 19.2,
     KRW: 172.5, THB: 4.65, SGD: 0.17, GBP: 0.10, EUR: 0.12,
@@ -45,7 +44,7 @@ async function initAPI() {
     }
 }
 
-// 渲染天氣與交通 Dashboard
+// 渲染天氣、匯率、交通與健康卡片
 async function renderDashboardWidget() {
     const modeEl = document.getElementById('modeSelect');
     const container = document.getElementById('globalDashboardWidget');
@@ -54,9 +53,9 @@ async function renderDashboardWidget() {
     const mode = modeEl.value;
     const city = CITIES[selectedCityIndex];
     const txt = i18n[currentLang];
+    const trafficAlertText = tdTrafficMsg || txt.trafficNormal;
 
     if (mode === 'EMP') {
-        // 匯率顯示邏輯 (確保永不顯示「匯率離線」)
         let rateHtml = "";
         const activeRates = ratesData || DEFAULT_RATES;
 
@@ -75,6 +74,20 @@ async function renderDashboardWidget() {
 
         container.innerHTML = `
             <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 shadow-md">
+                
+                <!-- 1. 交通與健康實用提示區 (新增至員工模式) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 pb-3 border-b border-slate-600/60">
+                    <div class="bg-slate-800/80 p-2.5 rounded border border-slate-700 flex items-start text-xs text-slate-300">
+                        <span class="mr-2 text-base">🚇</span>
+                        <span>${trafficAlertText}</span>
+                    </div>
+                    <div class="bg-slate-800/80 p-2.5 rounded border border-slate-700 flex items-start text-xs text-slate-300">
+                        <span class="mr-2 text-base">🏥</span>
+                        <span>${txt.healthAdvisory}</span>
+                    </div>
+                </div>
+
+                <!-- 2. 地點選擇與匯率 -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
                     <div>
                         <label class="text-xs font-semibold text-slate-300 uppercase tracking-wide mr-2">${txt.citySelectLabel}</label>
@@ -86,6 +99,8 @@ async function renderDashboardWidget() {
                         <span class="text-xs text-slate-400 mr-1">💱 參考匯率:</span> ${rateHtml}
                     </div>
                 </div>
+
+                <!-- 3. 未來 9 天天氣橫向滑軌 -->
                 <div id="weatherScrollBox" class="flex gap-2.5 overflow-x-auto no-scrollbar pb-2 pt-1">
                     <div class="text-xs text-slate-400 p-2">載入天氣預報中...</div>
                 </div>
@@ -107,7 +122,7 @@ async function renderDashboardWidget() {
             }
             if (scrollBox) scrollBox.innerHTML = weatherHtml;
 
-            // 背景調用天文台濕度資料
+            // 背景調用天文台數據
             fetchHKOWeather(currentLang).then(hkoJson => {
                 if (hkoJson && hkoJson.weatherForecast && scrollBox) {
                     const hkoHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
@@ -137,8 +152,7 @@ async function renderDashboardWidget() {
         }
 
     } else {
-        // HR 模式：展示交通出行與機場預警
-        const trafficAlertText = tdTrafficMsg || txt.trafficNormal;
+        // HR 模式
         container.innerHTML = `
             <div class="bg-slate-700/30 p-5 rounded-lg border border-slate-700/80 shadow-md">
                 <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider mb-4 flex items-center border-b border-slate-600 pb-2">
@@ -311,7 +325,7 @@ function calculate() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         const swCode = `
-            const CACHE_NAME = 'smartleave-offline-v18';
+            const CACHE_NAME = 'smartleave-offline-v19';
             self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
             self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
         `;
