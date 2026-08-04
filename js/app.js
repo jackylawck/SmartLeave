@@ -1,11 +1,18 @@
 /**
- * SmartLeave Main Application Logic (Zero-Wait Architecture)
+ * SmartLeave Main Application Logic (Guaranteed FX & Clear Traffic View)
  */
 
 let currentLang = 'TC';
 let selectedCityIndex = 0;
 let ratesData = null;
 let tdTrafficMsg = null;
+
+// 預設參考匯率庫 (保障離線時絕不顯示「匯率離線」)
+const DEFAULT_RATES = {
+    HKD: 1, CNY: 0.92, MOP: 1.03, TWD: 4.12, JPY: 19.2,
+    KRW: 172.5, THB: 4.65, SGD: 0.17, GBP: 0.10, EUR: 0.12,
+    AUD: 0.19, CAD: 0.17, USD: 0.128
+};
 
 // 初始化 API 數據
 async function initAPI() {
@@ -18,7 +25,7 @@ async function initAPI() {
             fetchTDTrafficNews()
         ]);
 
-        ratesData = rates;
+        ratesData = rates || DEFAULT_RATES;
         tdTrafficMsg = tdMsg;
 
         if (statusEl && txtEl) {
@@ -27,6 +34,7 @@ async function initAPI() {
             statusEl.querySelector('span').innerText = "✅";
         }
     } catch (e) {
+        ratesData = DEFAULT_RATES;
         if (statusEl && txtEl) {
             txtEl.innerText = i18n[currentLang].statusFallback;
             statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
@@ -48,16 +56,15 @@ async function renderDashboardWidget() {
     const txt = i18n[currentLang];
 
     if (mode === 'EMP') {
-        // 匯率顯示邏輯 (有備援庫，永不離線)
+        // 匯率顯示邏輯 (確保永不顯示「匯率離線」)
         let rateHtml = "";
-        const activeRates = ratesData || FALLBACK_RATES;
+        const activeRates = ratesData || DEFAULT_RATES;
 
         if (city.currency === "HKD") {
             rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">港幣 (HKD)</span>`;
-        } else if (activeRates && activeRates[city.currency]) {
-            rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD ≈ ${activeRates[city.currency]} ${city.currency}</span>`;
         } else {
-            rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">參考匯率</span>`;
+            const val = activeRates[city.currency] || DEFAULT_RATES[city.currency] || 1;
+            rateHtml = `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD ≈ ${val} ${city.currency}</span>`;
         }
 
         const cityOptions = CITIES.map((c, idx) => `
@@ -66,7 +73,6 @@ async function renderDashboardWidget() {
             </option>
         `).join('');
 
-        // 先把外殼畫好，確保 UI 零延遲出現
         container.innerHTML = `
             <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 shadow-md">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-2">
@@ -90,7 +96,6 @@ async function renderDashboardWidget() {
         let weatherHtml = "";
 
         if (city.id === "HK") {
-            // 香港：優先秒抓 Open-Meteo，保證 0.2 秒立刻出圖，絕不卡死！
             const omData = await fetchOpenMeteoWeather(22.3193, 114.1694);
             if (omData && omData.daily) {
                 weatherHtml = omData.daily.time.slice(0, 9).map((t, idx) => `
@@ -100,11 +105,9 @@ async function renderDashboardWidget() {
                     </div>
                 `).join('');
             }
-            
-            // 填入 Open-Meteo 數據
             if (scrollBox) scrollBox.innerHTML = weatherHtml;
 
-            // 背景悄悄嘗試拉取天文台詳細濕度，若成功則自動升級更新
+            // 背景調用天文台濕度資料
             fetchHKOWeather(currentLang).then(hkoJson => {
                 if (hkoJson && hkoJson.weatherForecast && scrollBox) {
                     const hkoHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
@@ -119,7 +122,6 @@ async function renderDashboardWidget() {
             });
 
         } else {
-            // 其他城市：直連 Open-Meteo
             const omData = await fetchOpenMeteoWeather(city.lat, city.lng);
             if (omData && omData.daily) {
                 weatherHtml = omData.daily.time.slice(0, 9).map((t, idx) => `
@@ -135,6 +137,7 @@ async function renderDashboardWidget() {
         }
 
     } else {
+        // HR 模式：展示交通出行與機場預警
         const trafficAlertText = tdTrafficMsg || txt.trafficNormal;
         container.innerHTML = `
             <div class="bg-slate-700/30 p-5 rounded-lg border border-slate-700/80 shadow-md">
@@ -308,7 +311,7 @@ function calculate() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         const swCode = `
-            const CACHE_NAME = 'smartleave-offline-v17';
+            const CACHE_NAME = 'smartleave-offline-v18';
             self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
             self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
         `;
