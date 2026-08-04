@@ -11,6 +11,10 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
+    <!-- 按順序且延遲執行腳本，確保 DOM 100% 就緒 -->
+    <script src="js/i18n.js" defer></script>
+    <script src="js/api.js" defer></script>
+    <script src="js/app.js" defer></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans flex flex-col">
     <div class="max-w-5xl w-full mx-auto bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700 flex-grow">
@@ -68,10 +72,5 @@
             </div>
         </div>
     </div>
-
-    <!-- 載入模組化 JavaScript 檔案 -->
-    <script src="js/i18n.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/app.js"></script>
 </body>
 </html>
