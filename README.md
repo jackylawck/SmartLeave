@@ -1,66 +1,63 @@
-# SmartLeave 智休假 🏖️📊
+# 🏖️ SmartLeave 智休假 | HK Leave Optimizer & Travel Assistant
 
-**HK Dual-View Leave Optimizer & Workforce Risk Index (Offline-First PWA)**
-**香港雙視角請假攻略 & HR 人力風險預警系統 (離線優先 PWA)**
-
-🔗 **Live Demo / 在線體驗**: [https://jackylawck.github.io/SmartLeave/](https://jackylawck.github.io/SmartLeave/)
+[繁體中文](#-繁體中文) | [English](#-english)
 
 ---
 
-## 📖 Project Overview / 專案簡介
+## 🇭🇰 繁體中文
 
-**[EN]**
-SmartLeave is an Offline-First, serverless client-side Progressive Web Application (PWA) designed to optimize annual leave planning for employees in Hong Kong, while equipping HR professionals and management with critical workforce overlap risk alerts. By integrating official Hong Kong Government API data with a dual-view interface and offline caching, this tool balances employee experience (EX) with operational risk management and high availability.
+> **SmartLeave 智休假** 是一款專為香港上班族與 HR / 管理層設計的雙視角「請假攻略、天氣交通與健康出行」助手。系統採用 **純前端 (Pure Client-Side)** 技術與 **無金鑰架構**，所有運算均在您的瀏覽器本地完成，不傳送任何請假數據至外部伺服器，保障個人隱私與資料安全。
 
-**[TC]**
-SmartLeave 是一個「離線優先 (Offline-First)」、無伺服器純前端運算的漸進式網頁應用程式 (PWA)。它不僅能為香港員工計算最高 CP 值的請假攻略，更能為 HR 與管理層提供連假期間的人力真空風險預警。透過整合香港政府官方 API 數據、離線快取引擎與雙視角介面，本系統完美平衡了員工體驗 (EX) 與企業營運風險管理。
+### 🌟 核心亮點
 
----
+#### 1. 🏖️ 雙視角請假與營運助手
+* **員工模式**：輸入年假天數（AL），智慧演算最佳請假方案（極大化連續放假天數），並支援一鍵下載手機日曆 (`.ics` 檔案)。
+* **HR / 管理層模式**：自動標示連假期間的人手緊張期，並整合大眾運輸與天氣消息，作為彈性工作安排與營運持續之決策參考。
 
-## ✨ Key Features / 核心功能
+#### 2. 🌍 實時交通、天氣與匯率助手
+* **🏛️ 香港政府 1823 假期數據**：同步 2026-2027 香港公眾假期官方資料。
+* **🌤️ 9 天天氣預報滑軌**：
+  * **香港本地**：直連香港天文台，顯示最高/最低氣溫與相對濕度。
+  * **熱門目的地**：支援深圳、廣州、澳門、台北、東京、倫敦、悉尼、紐約等 17+ 城市之未來 9 天氣溫預測。
+* **🚇 運輸署即時交通與健康提示**：實時掌握全港主要幹道、港鐵服務狀況及旅遊衛生健康提醒。
+* **💱 參考匯率自動換算**：支援 JPY, CNY, TWD, MOP, USD, EUR, AUD 等多國貨幣參考換算。
 
-*   **Offline-First & PWA (離線優先與 PWA 支援)**: Built-in Service Worker caches core assets. Works 100% seamlessly even without internet access or in flight mode.
-    *(內建 Service Worker 離線快取，飛行模式或無網路狀態下仍可 100% 正常計算。)*
-*   **Dual-View Mode (雙視角模式)**: Toggle seamlessly between "Employee Mode" (Leave Optimization) and "HR Mode" (Workforce Risk Alert).
-    *(無縫切換「員工請假攻略」與「HR / 管理層風險預警」視角。)*
-*   **Bilingual Interface (雙語介面)**: Native support for English and Traditional Chinese (i18n).
-    *(全中/全英雙語系切換。)*
-*   **Live Gov API Integration (政府數據直連)**: Automatically fetches the latest gazetted public holidays directly from `DATA.GOV.HK` via secure proxy.
-    *(透過安全代理直連香港政府官方資料庫。)*
-*   **Leave Efficiency Algorithm (請假效益演算法)**: Automatically calculates and filters the best leave intervals based on the user's available Annual Leave (AL) balance.
-    *(根據可用 AL 天數自動智算最高 CP 值請假組合。)*
+#### 3. 🛡️ 隱私保障與離線使用
+* **隱私第一**：無後端資料庫，不蒐集任何個人休假天數或行事曆資訊。
+* **離線支援**：支援 PWA 離線技術，即使在地下鐵或無網路環境下也能隨時開啟查看休假攻略。
 
----
-
-## 🛡️ Governance & Architecture / 治理與系統架構
-
-This project is built with Enterprise Governance, Risk, and Compliance (GRC) principles at its core:
-本專案在架構設計上深度融合了企業治理、風險管理與合規精神：
-
-*   **Privacy by Design (ISO 27001 Alignment)**: Utilizes 100% Client-Side Rendering (CSR). User inputs (AL days) and interaction logs are processed entirely within the local browser. Zero data is transmitted to or stored on external servers, eliminating data breach risks.
-    *(隱私造就設計：全面採用端到端本地運算，零資料外洩風險，對齊 ISO 27001 資訊安全精神。)*
-*   **Business Continuity & Failover (ISO 22301 Alignment)**: Implements a High-Availability 3-Tier Failover mechanism combined with Service Worker caching. If the primary Government API connection is restricted or offline, the system instantly degrades gracefully to a pre-loaded local JSON database (2026-2027 Gazetted Holidays), ensuring 99.9% uptime and zero-disruption offline execution.
-    *(高可用性與營運持續：結合 Service Worker 快取與 3-Tier 備援機制，斷網或 API 異常時無縫切換至本地資料庫，展現 ISO 22301 系統韌性。)*
-*   **Algorithm Transparency**: Clear display of the Leave Efficiency Ratio logic (Total Days Off ÷ Required AL Days) to prevent black-box decision-making.
-    *(演算法透明度：清晰展示 CP 值計算邏輯，避免黑箱作業。)*
+### 📜 隱私與合規保障
+* **資訊安全**：所有請假試算與日曆檔案生成均於用戶端瀏覽器內完成，零資料外洩風險。
+* **職業安全與健康 (OSH)**：整合大眾交通即時消息與衛生提示，方便隨時規劃安全出行。
 
 ---
 
-## 🛠️ Tech Stack / 技術棧
+## 🇬🇧 English
 
-*   **Frontend**: HTML5, Vanilla JavaScript, Tailwind CSS (via CDN)
-*   **PWA / Offline**: Service Worker API, Cache Storage
-*   **Data Source**: HK Gov 1823 API (`DATA.GOV.HK`), Local Fallback JSON
-*   **Hosting**: GitHub Pages
-*   **Proxy Integration**: CORS optimization via `api.allorigins.win`
+> **SmartLeave** is a dual-perspective leave optimizer, weather, transit, and travel health assistant designed for Hong Kong employees and HR managers. Built on a **Pure Client-Side** and **Keyless Architecture**, all calculations are performed locally in your browser to ensure zero data leakage and total privacy.
+
+### 🌟 Key Features
+
+#### 1. 🏖️ Dual-Perspective Operating Modes
+* **Employee Mode**: Enter your available Annual Leave (AL) days to generate optimal leave combinations (maximizing consecutive days off), with 1-click export to your mobile calendar (`.ics` file).
+* **HR / Manager Mode**: Highlight high-risk workforce gaps during long holiday streaks, integrated with public transport and weather advisories to support flexible work arrangements and Business Continuity Management.
+
+#### 2. 🌍 Live Transit, Weather & Currency Index
+* **🏛️ HK Gov 1823 Data**: Synchronized official Hong Kong public holiday records for 2026-2027.
+* **🌤️ 9-Day Weather Forecast**:
+  * **Hong Kong Local**: Direct stream from Hong Kong Observatory (HKO) with temperature and humidity metrics.
+  * **Travel Destinations**: 9-day temperature forecast covering 17+ popular hubs including Shenzhen, Guangzhou, Macau, Taipei, Tokyo, London, Sydney, New York, etc.
+* **🚇 Transport Department & Health Advisories**: Real-time updates on major roadways, MTR status, and travel health recommendations.
+* **💱 Live Exchange Rates**: Auto-conversion reference for JPY, CNY, TWD, MOP, USD, EUR, AUD, and more.
+
+#### 3. 🛡️ Privacy First & Offline Availability
+* **Privacy by Design**: No backend server or database; zero tracking of personal leave data or calendar events.
+* **Offline Ready**: Built-in PWA Service Worker allows seamless access even in offline environments or underground MTR stations.
+
+### 📜 Compliance & Security
+* **Data Security**: All calculations and ICS calendar file generation occur locally in your browser.
+* **Occupational Safety & Health (OSH)**: Integrated with real-time transit and health alerts for safe travel planning.
 
 ---
 
-## 🚀 How to Run Locally / 本地運行方式
-
-Since this is a client-side application, no backend server setup is required.
-由於本專案為純前端應用程式，無需設定任何後端伺服器。
-
-1. Clone the repository / 複製專案:
-   ```bash
-   git clone [https://github.com/jackylawck/SmartLeave.git](https://github.com/jackylawck/SmartLeave.git)
+© 2026 SmartLeave. Created with ❤️ in Hong Kong.
