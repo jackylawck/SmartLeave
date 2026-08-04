@@ -1,5 +1,5 @@
 /**
- * SmartLeave Main Application Logic (Integrated Travel & Health Info for Everyone)
+ * SmartLeave Main Application Logic (Cache Version 20 - Guaranteed Active)
  */
 
 let currentLang = 'TC';
@@ -7,6 +7,7 @@ let selectedCityIndex = 0;
 let ratesData = null;
 let tdTrafficMsg = null;
 
+// 預設參考匯率庫（確保即便完全斷網，也絕不顯示「匯率離線」）
 const DEFAULT_RATES = {
     HKD: 1, CNY: 0.92, MOP: 1.03, TWD: 4.12, JPY: 19.2,
     KRW: 172.5, THB: 4.65, SGD: 0.17, GBP: 0.10, EUR: 0.12,
@@ -24,7 +25,7 @@ async function initAPI() {
             fetchTDTrafficNews()
         ]);
 
-        ratesData = rates || DEFAULT_RATES;
+        ratesData = (rates && Object.keys(rates).length > 0) ? rates : DEFAULT_RATES;
         tdTrafficMsg = tdMsg;
 
         if (statusEl && txtEl) {
@@ -56,6 +57,7 @@ async function renderDashboardWidget() {
     const trafficAlertText = tdTrafficMsg || txt.trafficNormal;
 
     if (mode === 'EMP') {
+        // 匯率計算：強制兜底 DEFAULT_RATES，徹底杜絕「匯率離線」字眼
         let rateHtml = "";
         const activeRates = ratesData || DEFAULT_RATES;
 
@@ -75,7 +77,7 @@ async function renderDashboardWidget() {
         container.innerHTML = `
             <div class="bg-slate-700/30 p-4 rounded-lg border border-slate-700/80 shadow-md">
                 
-                <!-- 1. 交通與健康實用提示區 (新增至員工模式) -->
+                <!-- 1. 交通與健康實用提示區 (頂部資訊卡) -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 pb-3 border-b border-slate-600/60">
                     <div class="bg-slate-800/80 p-2.5 rounded border border-slate-700 flex items-start text-xs text-slate-300">
                         <span class="mr-2 text-base">🚇</span>
@@ -122,7 +124,7 @@ async function renderDashboardWidget() {
             }
             if (scrollBox) scrollBox.innerHTML = weatherHtml;
 
-            // 背景調用天文台數據
+            // 背景非同步載入香港天文台
             fetchHKOWeather(currentLang).then(hkoJson => {
                 if (hkoJson && hkoJson.weatherForecast && scrollBox) {
                     const hkoHtml = hkoJson.weatherForecast.slice(0, 9).map(f => `
@@ -147,7 +149,7 @@ async function renderDashboardWidget() {
                 `).join('');
             }
             if (scrollBox) {
-                scrollBox.innerHTML = weatherHtml || `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
+                scrollBox.innerHTML = weatherHtml || `<div class="text-xs text-slate-400 p-2">天氣資料更新中...</div>`;
             }
         }
 
@@ -321,12 +323,19 @@ function calculate() {
     }).join('');
 }
 
-// Service Worker
+// 強制清理舊版快取並註冊 Service Worker v20
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+        caches.keys().then(names => {
+            for (let name of names) {
+                if (name !== 'smartleave-offline-v20') caches.delete(name);
+            }
+        });
+
         const swCode = `
-            const CACHE_NAME = 'smartleave-offline-v19';
-            self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
+            const CACHE_NAME = 'smartleave-offline-v20';
+            self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(['./']))); });
+            self.addEventListener('activate', e => { e.waitUntil(self.clients.claim()); });
             self.addEventListener('fetch', e => { e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))); });
         `;
         const blob = new Blob([swCode], { type: 'application/javascript' });
