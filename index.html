@@ -10,13 +10,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Primary Bilingual SEO Meta Tags (純功能導向摘要，無公開作者字眼) -->
+    <!-- Enterprise Content Security Policy (CSP 資安防禦) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;
+        style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;
+        img-src 'self' data: https:;
+        connect-src 'self' https://api.frankfurter.app https://api.open-meteo.com https://data.weather.gov.hk https://ws.td.gov.hk;
+        font-src 'self' data:;
+        manifest-src 'self';
+    ">
+
+    <!-- Performance: DNS Prefetch & Preconnect (API 連線加速) -->
+    <link rel="preconnect" href="https://api.frankfurter.app" crossorigin>
+    <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
+    <link rel="dns-prefetch" href="https://data.weather.gov.hk">
+    <link rel="dns-prefetch" href="https://ws.td.gov.hk">
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
+
+    <!-- Primary Bilingual SEO Meta Tags -->
     <title>SmartLeave 智休假 | 香港請假攻略、天氣交通與出行助手 | HK Leave Optimizer & Travel Assistant</title>
     <meta name="title" content="SmartLeave 智休假 | 香港請假攻略、天氣交通與出行助手 | HK Leave Optimizer">
     <meta name="description" content="【香港請假攻略 2026-2027】輸入 AL 年假天數，秒速演算 CP 值最高連休方案！一鍵加入手機日曆 (.ics)，整合天文台 9 天天氣、運輸署交通與 Live 匯率。100% 本地瀏覽器運算，保障隱私安全。 | Hong Kong Leave Optimizer: Maximize your annual leave with smart calculations, weather, transport updates, and privacy-first local processing.">
     <meta name="keywords" content="SmartLeave, 智休假, 香港請假攻略, 公眾假期 2026, AL 計算器, 請假 CP 值, 香港天文台天氣, 運輸署交通消息, HK Public Holiday, Leave Optimizer, Hong Kong Holiday Planner, PWA, Privacy by Design">
     
-    <!-- Code-level Machine Readable Metadata -->
+    <!-- Machine Readable Metadata -->
     <meta name="author" content="羅子淇 Jacky Law">
     <meta name="creator" content="羅子淇 Jacky Law">
     <meta name="publisher" content="SmartLeave HK">
@@ -27,21 +45,21 @@
     <link rel="alternate" hreflang="en" href="https://jackylawck.github.io/SmartLeave/" />
     <link rel="alternate" hreflang="x-default" href="https://jackylawck.github.io/SmartLeave/" />
 
-    <!-- Open Graph / Facebook / WhatsApp 社交分享標籤 -->
+    <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jackylawck.github.io/SmartLeave/">
     <meta property="og:title" content="SmartLeave 智休假 | 香港請假攻略 & 天氣交通出行助手">
     <meta property="og:description" content="輸入 AL 天數，即時計算最佳放假組合！整合 1823 假期、天文台 9 天天氣、運輸署即時交通與匯率。純本地運算，零資料外洩。">
     <meta property="og:image" content="https://jackylawck.github.io/SmartLeave/SmartLeaveicon-512.png">
 
-    <!-- Twitter Card 分享標籤 -->
+    <!-- Twitter Card -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://jackylawck.github.io/SmartLeave/">
     <meta property="twitter:title" content="SmartLeave 智休假 | 香港請假攻略 HK Leave Optimizer">
     <meta property="twitter:description" content="輸入 AL 秒算最高 CP 值請假方案！整合天氣、交通與匯率，支援一鍵匯出手機日曆。">
     <meta property="twitter:image" content="https://jackylawck.github.io/SmartLeave/SmartLeaveicon-512.png">
 
-    <!-- Schema.org 結構化資料 (精準對接演算法與 Knowledge Graph，不干擾公開顯示摘要) -->
+    <!-- Schema.org JSON-LD -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -84,70 +102,69 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 隱藏滾動條但保持滑動 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-    <!-- 按順序且延遲執行腳本，確保 DOM 100% 就緒 -->
+
+    <!-- 按順序載入腳本 -->
+    <script src="js/config.js" defer></script>
     <script src="js/i18n.js" defer></script>
     <script src="js/api.js" defer></script>
     <script src="js/app.js" defer></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans flex flex-col">
-    <div class="max-w-5xl w-full mx-auto bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700 flex-grow">
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 font-sans flex flex-col justify-between">
+    
+    <main class="max-w-5xl w-full mx-auto bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700 flex-grow" role="main">
         
-        <!-- 頂部標題 & 語言切換 -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 mb-6">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-emerald-400" id="title">SmartLeave 智休假</h1>
                 <p class="text-slate-400 text-sm mt-1" id="subtitle">香港請假攻略 & 天氣交通出行助手</p>
             </div>
-            <select id="langSelect" onchange="toggleLanguage()" class="mt-4 md:mt-0 bg-slate-700 text-white px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
-                <option value="TC">繁體中文</option>
-                <option value="EN">English</option>
-            </select>
-        </div>
+            <div class="mt-4 md:mt-0">
+                <label for="langSelect" class="sr-only">選擇語言 / Select Language</label>
+                <select id="langSelect" aria-label="切換語系" class="bg-slate-700 text-white px-3 py-1.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
+                    <option value="TC">繁體中文</option>
+                    <option value="EN">English</option>
+                </select>
+            </div>
+        </header>
 
-        <!-- 模式與年份設定 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-700/50 p-4 rounded-lg border border-slate-600/50">
+        <section aria-labelledby="lblMode" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-700/50 p-4 rounded-lg border border-slate-600/50">
             <div>
-                <label class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblMode">使用身份</label>
-                <select id="modeSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
-                    <option value="EMP" id="optEmp">🏖️ 員工：請假攻略、天氣與匯率</option>
+                <label for="modeSelect" class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblMode">使用身份</label>
+                <select id="modeSelect" aria-labelledby="lblMode" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
+                    <option value="EMP" id="optEmp">🏖️ 員工：請假攻略、天氣、交通與健康提示</option>
                     <option value="HR" id="optHR">📊 HR / 管理層：連假人手與交通提醒</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblYear">目標年份</label>
-                <select id="yearSelect" onchange="renderUI()" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
+                <label for="yearSelect" class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblYear">目標年份</label>
+                <select id="yearSelect" aria-labelledby="lblYear" class="w-full bg-slate-800 text-white p-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 transition-colors">
                     <option value="2026" id="optYear2026">2026 年</option>
                     <option value="2027" id="optYear2027">2027 年</option>
                 </select>
             </div>
+        </section>
+
+        <div id="apiStatus" role="status" aria-live="polite" class="mb-6 p-3.5 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300 flex items-center shadow-inner">
+            <span class="mr-2 text-lg" aria-hidden="true">⏳</span> <span id="statusText">正在更新最新數據... / Loading latest data...</span>
         </div>
 
-        <!-- 連線狀態 Banner -->
-        <div id="apiStatus" class="mb-6 p-3.5 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300 flex items-center shadow-inner">
-            <span class="mr-2 text-lg">⏳</span> <span id="statusText">正在更新最新數據... / Loading latest data...</span>
-        </div>
+        <section id="globalDashboardWidget" aria-label="即時天氣與交通面板" class="mb-6"></section>
 
-        <!-- 天氣與交通面板 -->
-        <div id="globalDashboardWidget" class="mb-6"></div>
+        <section id="contentArea" aria-label="請假計算與決策面板" class="min-h-[250px]"></section>
 
-        <!-- 內容展示區 -->
-        <div id="contentArea" class="min-h-[250px]"></div>
+    </main>
 
-    </div>
-
-    <!-- 隱私聲明 Footer (純極簡隱私說明，無額外作者文字) -->
-    <div class="max-w-5xl w-full mx-auto mt-6 p-4 bg-slate-800/80 rounded-lg border border-slate-700 text-xs text-slate-400 leading-relaxed shadow-lg">
+    <footer class="max-w-5xl w-full mx-auto mt-6 p-4 bg-slate-800/80 rounded-lg border border-slate-700 text-xs text-slate-400 leading-relaxed shadow-lg" role="contentinfo">
         <div class="flex items-start">
-            <span class="text-emerald-500 text-lg mr-2">🔒</span>
+            <span class="text-emerald-500 text-lg mr-2" aria-hidden="true">🔒</span>
             <div>
                 <strong class="text-slate-300 block mb-1" id="govTitle">隱私與安全保障：</strong>
                 <p id="govText">本工具所有運算均在您的瀏覽器內完成（包括日曆下載），您的請假資料絕不會傳送到任何外部伺服器。同時支援離線使用，斷網時也能隨時查看休假攻略。</p>
             </div>
         </div>
-    </div>
+    </footer>
 </body>
 </html>
