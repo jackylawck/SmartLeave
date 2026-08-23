@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
+    <!-- 
+        SmartLeave 智休假 | Hong Kong Leave Optimizer & Travel Assistant
+        Author / Creator: 羅子淇 Jacky Law
+        Profile: https://jackylawck.github.io/jackylawck
+        Repository: https://github.com/jackylawck/SmartLeave
+    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Enterprise Content Security Policy -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com;
-        style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;
-        img-src 'self' data: https:;
-        connect-src 'self' https://api.frankfurter.app https://api.open-meteo.com https://data.weather.gov.hk https://ws.td.gov.hk;
-    ">
 
     <!-- Primary Bilingual SEO Meta Tags -->
     <title>SmartLeave 智休假 | 香港請假攻略、天氣交通與出行助手 | HK Leave Optimizer & Travel Assistant</title>
     <meta name="title" content="SmartLeave 智休假 | 香港請假攻略、天氣交通與出行助手 | HK Leave Optimizer">
-    <meta name="description" content="【香港請假攻略 2026-2027】輸入 AL 年假天數，秒速演算 CP 值最高連休方案！一鍵加入手機日曆 (.ics)，整合天文台 9 天天氣、運輸署交通與 Live 匯率。100% 本地瀏覽器運算，保障隱私安全。 | Hong Kong Leave Optimizer: Maximize your annual leave with smart calculations, weather, transport updates, and privacy-first local processing.">
+    <meta name="description" content="【香港請假攻略 2026-2027】輸入 AL 年假天數，秒速演算 CP 值最高連休方案！一鍵加入手機日曆 (.ics)，整合天文台 9 天天氣、運輸署交通與 Live 匯率。100% 本地瀏覽器運算，保障隱私安全。">
     <meta name="keywords" content="SmartLeave, 智休假, 香港請假攻略, 公眾假期 2026, AL 計算器, 請假 CP 值, 香港天文台天氣, 運輸署交通消息, HK Public Holiday, Leave Optimizer, Hong Kong Holiday Planner, PWA, Privacy by Design">
     
     <!-- Machine Readable Metadata -->
@@ -97,7 +94,7 @@
             </div>
         </section>
 
-        <!-- 狀態 Banner (保留 span 結構防止 JS 報錯) -->
+        <!-- 狀態 Banner -->
         <div id="apiStatus" role="status" aria-live="polite" class="mb-6 p-3.5 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300 flex items-center shadow-inner">
             <span id="statusIcon" class="mr-2 text-lg" aria-hidden="true">⏳</span>
             <span id="statusText">正在更新最新數據... / Loading latest data...</span>
