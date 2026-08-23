@@ -1,32 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <!-- 
-        SmartLeave 智休假 | Hong Kong Leave Optimizer & Travel Assistant
-        Author / Creator: 羅子淇 Jacky Law
-        Profile: https://jackylawck.github.io/jackylawck
-        Repository: https://github.com/jackylawck/SmartLeave
-    -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Enterprise Content Security Policy (CSP 資安防禦) -->
+    <!-- Enterprise Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;
+        default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com;
         style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;
         img-src 'self' data: https:;
         connect-src 'self' https://api.frankfurter.app https://api.open-meteo.com https://data.weather.gov.hk https://ws.td.gov.hk;
-        font-src 'self' data:;
-        manifest-src 'self';
     ">
-
-    <!-- Performance: DNS Prefetch & Preconnect (API 連線加速) -->
-    <link rel="preconnect" href="https://api.frankfurter.app" crossorigin>
-    <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
-    <link rel="dns-prefetch" href="https://data.weather.gov.hk">
-    <link rel="dns-prefetch" href="https://ws.td.gov.hk">
-    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com">
 
     <!-- Primary Bilingual SEO Meta Tags -->
     <title>SmartLeave 智休假 | 香港請假攻略、天氣交通與出行助手 | HK Leave Optimizer & Travel Assistant</title>
@@ -40,59 +25,22 @@
     <meta name="publisher" content="SmartLeave HK">
     <meta name="robots" content="index, follow">
 
-    <!-- Hreflang 語言與地區宣告 -->
+    <!-- Hreflang -->
     <link rel="alternate" hreflang="zh-HK" href="https://jackylawck.github.io/SmartLeave/" />
     <link rel="alternate" hreflang="en" href="https://jackylawck.github.io/SmartLeave/" />
     <link rel="alternate" hreflang="x-default" href="https://jackylawck.github.io/SmartLeave/" />
 
-    <!-- Open Graph / Social Sharing -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://jackylawck.github.io/SmartLeave/">
     <meta property="og:title" content="SmartLeave 智休假 | 香港請假攻略 & 天氣交通出行助手">
     <meta property="og:description" content="輸入 AL 天數，即時計算最佳放假組合！整合 1823 假期、天文台 9 天天氣、運輸署即時交通與匯率。純本地運算，零資料外洩。">
     <meta property="og:image" content="https://jackylawck.github.io/SmartLeave/SmartLeaveicon-512.png">
 
-    <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://jackylawck.github.io/SmartLeave/">
-    <meta property="twitter:title" content="SmartLeave 智休假 | 香港請假攻略 HK Leave Optimizer">
-    <meta property="twitter:description" content="輸入 AL 秒算最高 CP 值請假方案！整合天氣、交通與匯率，支援一鍵匯出手機日曆。">
-    <meta property="twitter:image" content="https://jackylawck.github.io/SmartLeave/SmartLeaveicon-512.png">
-
-    <!-- Schema.org JSON-LD -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "SmartLeave 智休假",
-      "alternateName": "HK Leave Optimizer",
-      "url": "https://jackylawck.github.io/SmartLeave/",
-      "description": "香港請假攻略 & 天氣交通出行助手 (Hong Kong Leave Optimizer & Travel Assistant)",
-      "applicationCategory": "Productivity",
-      "operatingSystem": "All",
-      "author": {
-        "@type": "Person",
-        "name": "羅子淇",
-        "alternateName": "Jacky Law",
-        "url": "https://jackylawck.github.io/jackylawck",
-        "sameAs": [
-          "https://github.com/jackylawck",
-          "https://jackylawck.github.io/jackylawck"
-        ]
-      },
-      "creator": {
-        "@type": "Person",
-        "name": "羅子淇",
-        "alternateName": "Jacky Law",
-        "url": "https://jackylawck.github.io/jackylawck"
-      }
-    }
-    </script>
-
-    <!-- Google Search Console 驗證 -->
+    <!-- Google Search Console -->
     <meta name="google-site-verification" content="JZ5UohX-CcP_fQV0_DI9VadkKY4ZoTTkUifL88-fIcY" />
     
-    <!-- PWA Manifest & App Icons -->
+    <!-- PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f172a">
     <link rel="apple-touch-icon" sizes="180x180" href="SmartLeaveicon-192.png">
@@ -116,6 +64,7 @@
     
     <main class="max-w-5xl w-full mx-auto bg-slate-800 rounded-xl shadow-2xl p-6 border border-slate-700 flex-grow" role="main">
         
+        <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-700 pb-4 mb-6">
             <div>
                 <h1 class="text-3xl font-bold text-emerald-400" id="title">SmartLeave 智休假</h1>
@@ -130,6 +79,7 @@
             </div>
         </header>
 
+        <!-- Mode & Year -->
         <section aria-labelledby="lblMode" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-slate-700/50 p-4 rounded-lg border border-slate-600/50">
             <div>
                 <label for="modeSelect" class="block text-xs text-slate-400 mb-1 font-semibold tracking-wide uppercase" id="lblMode">使用身份</label>
@@ -147,12 +97,13 @@
             </div>
         </section>
 
+        <!-- 狀態 Banner (保留 span 結構防止 JS 報錯) -->
         <div id="apiStatus" role="status" aria-live="polite" class="mb-6 p-3.5 rounded-lg text-sm bg-slate-800 border border-slate-600 text-slate-300 flex items-center shadow-inner">
-            <span class="mr-2 text-lg" aria-hidden="true">⏳</span> <span id="statusText">正在更新最新數據... / Loading latest data...</span>
+            <span id="statusIcon" class="mr-2 text-lg" aria-hidden="true">⏳</span>
+            <span id="statusText">正在更新最新數據... / Loading latest data...</span>
         </div>
 
         <section id="globalDashboardWidget" aria-label="即時天氣與交通面板" class="mb-6"></section>
-
         <section id="contentArea" aria-label="請假計算與決策面板" class="min-h-[250px]"></section>
 
     </main>
