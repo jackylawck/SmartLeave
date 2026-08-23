@@ -1,41 +1,22 @@
 /**
  * @file app.js
- * @description SmartLeave Main Application Module (Enterprise UI Controller)
- * @author Jacky Law (羅子淇)
- * @license MIT
+ * @description SmartLeave Main Application Module
  */
 
 (() => {
     'use strict';
 
-    /**
-     * @typedef {Object} AppState
-     * @property {'TC'|'EN'} lang - 介面語系
-     * @property {'EMP'|'HR'} mode - 操作視角
-     * @property {'2026'|'2027'} year - 計算年份
-     * @property {number} cityIndex - 目的地索引
-     * @property {Record<string, number>} rates - 匯率字典
-     * @property {string|null} trafficAlert - 交通快訊
-     */
-
-    /** @type {AppState} */
     const state = {
         lang: 'TC',
         mode: 'EMP',
         year: '2026',
         cityIndex: 0,
-        rates: ApiService.DEFAULT_RATES,
+        rates: (typeof ApiService !== 'undefined') ? ApiService.DEFAULT_RATES : {},
         trafficAlert: null
     };
 
-    /** @type {number|null} 防抖計時器 */
     let debounceTimer = null;
 
-    /**
-     * XSS 防禦字串跳脫
-     * @param {any} str 
-     * @returns {string}
-     */
     function escapeHTML(str) {
         if (!str) return '';
         return String(str)
@@ -46,24 +27,15 @@
             .replace(/'/g, '&#039;');
     }
 
-    /**
-     * 匯率 UI 標籤生成器
-     * @param {Object} city 
-     * @returns {string}
-     */
     function getRateDisplayText(city) {
+        if (!city) return '';
         if (city.currency === "HKD") {
             return `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">港幣 (HKD)</span>`;
         }
-        const rateVal = state.rates[city.currency] || ApiService.DEFAULT_RATES[city.currency] || 1;
+        const rateVal = state.rates[city.currency] || 1;
         return `<span class="text-emerald-300 font-bold ml-2 bg-emerald-900/50 px-2 py-1 rounded border border-emerald-700 text-xs">1 HKD ≈ ${escapeHTML(rateVal)} ${escapeHTML(city.currency)}</span>`;
     }
 
-    /**
-     * Open-Meteo 天氣預報卡片建構器
-     * @param {Object} dailyData 
-     * @returns {string}
-     */
     function buildWeatherCardsHTML(dailyData) {
         if (!dailyData?.time || !Array.isArray(dailyData.time)) {
             return `<div class="text-xs text-slate-400 p-2">天氣資料暫時離線</div>`;
@@ -81,11 +53,6 @@
         }).join('');
     }
 
-    /**
-     * 香港天文台 9 天天氣卡片建構器
-     * @param {Array<Object>} forecastList 
-     * @returns {string}
-     */
     function buildHKOCardsHTML(forecastList) {
         return forecastList.slice(0, 9).map(f => `
             <div class="bg-slate-800/90 min-w-[110px] p-2.5 rounded border border-emerald-600/40 text-xs text-center flex-shrink-0 shadow-md">
@@ -96,26 +63,19 @@
         `).join('');
     }
 
-    /**
-     * 異步更新天氣區塊 (含 Debounce 防抖保護)
-     */
     async function updateWeatherSection() {
         const scrollBox = document.getElementById('weatherScrollBox');
-        if (!scrollBox) return;
+        if (!scrollBox || typeof CITIES === 'undefined') return;
 
         const city = CITIES[state.cityIndex];
         scrollBox.innerHTML = `<div class="text-xs text-slate-400 p-2">載入 9 天天氣預報中...</div>`;
 
         if (city.id === "HK") {
             const omData = await ApiService.fetchOpenMeteoWeather(22.3193, 114.1694);
-            if (omData?.daily) {
-                scrollBox.innerHTML = buildWeatherCardsHTML(omData.daily);
-            }
+            if (omData?.daily) scrollBox.innerHTML = buildWeatherCardsHTML(omData.daily);
 
             ApiService.fetchHKOWeather(state.lang).then(hkoData => {
-                if (hkoData && scrollBox) {
-                    scrollBox.innerHTML = buildHKOCardsHTML(hkoData);
-                }
+                if (hkoData && scrollBox) scrollBox.innerHTML = buildHKOCardsHTML(hkoData);
             });
         } else {
             const omData = await ApiService.fetchOpenMeteoWeather(city.lat, city.lng);
@@ -127,12 +87,9 @@
         }
     }
 
-    /**
-     * 渲染頂部總覽卡片 (Dashboard Widget)
-     */
     function renderDashboardWidget() {
         const container = document.getElementById('globalDashboardWidget');
-        if (!container) return;
+        if (!container || typeof i18n === 'undefined' || typeof CITIES === 'undefined') return;
 
         const txt = i18n[state.lang];
         const city = CITIES[state.cityIndex];
@@ -172,17 +129,13 @@
                 </div>
             `;
 
-            // 城市切換事件 (加入 150ms 防抖避免連續點擊衝擊 API)
             document.getElementById('citySelectField')?.addEventListener('change', (e) => {
                 state.cityIndex = parseInt(e.target.value, 10) || 0;
                 if (debounceTimer) clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    renderDashboardWidget();
-                }, 150);
+                debounceTimer = setTimeout(() => renderDashboardWidget(), 150);
             });
 
             updateWeatherSection();
-
         } else {
             container.innerHTML = `
                 <div class="bg-slate-700/30 p-5 rounded-lg border border-slate-700/80 shadow-md">
@@ -204,13 +157,10 @@
         }
     }
 
-    /**
-     * 核心請假方案演算
-     */
     function calculateLeavePlans() {
         const grid = document.getElementById('resultsGrid');
         const alInputEl = document.getElementById('alInput');
-        if (!grid || !alInputEl) return;
+        if (!grid || !alInputEl || typeof i18n === 'undefined') return;
 
         const txt = i18n[state.lang];
         const rawVal = parseInt(alInputEl.value, 10);
@@ -266,12 +216,6 @@
         });
     }
 
-    /**
-     * 產生日曆檔案並自動回收記憶體資源
-     * @param {string} title 
-     * @param {string} startDate 
-     * @param {string} endDate 
-     */
     function generateICS(title, startDate, endDate) {
         const formatICSDate = (dateStr) => dateStr.replace(/-/g, '') + 'T000000Z';
         const start = formatICSDate(startDate);
@@ -288,7 +232,7 @@ BEGIN:VEVENT
 SUMMARY:${title} (SmartLeave)
 DTSTART:${start}
 DTEND:${end}
-DESCRIPTION:SmartLeave Local Generated (Privacy Preserved)
+DESCRIPTION:SmartLeave Local Generated
 STATUS:CONFIRMED
 END:VEVENT
 END:VCALENDAR`;
@@ -305,12 +249,9 @@ END:VCALENDAR`;
         setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
     }
 
-    /**
-     * 渲染主要內容區域
-     */
     function renderMainUI() {
         const content = document.getElementById('contentArea');
-        if (!content) return;
+        if (!content || typeof i18n === 'undefined') return;
 
         const txt = i18n[state.lang];
         renderDashboardWidget();
@@ -344,10 +285,8 @@ END:VCALENDAR`;
         }
     }
 
-    /**
-     * 更新靜態標籤文字
-     */
     function updateStaticText() {
+        if (typeof i18n === 'undefined') return;
         const txt = i18n[state.lang];
         document.getElementById('title').innerText = txt.title;
         document.getElementById('subtitle').innerText = txt.subtitle;
@@ -361,9 +300,6 @@ END:VCALENDAR`;
         document.getElementById('govText').innerText = txt.govText;
     }
 
-    /**
-     * 應用程式啟動入口
-     */
     async function initApp() {
         document.getElementById('langSelect')?.addEventListener('change', (e) => {
             state.lang = e.target.value;
@@ -387,6 +323,10 @@ END:VCALENDAR`;
 
         const statusEl = document.getElementById('apiStatus');
         const txtEl = document.getElementById('statusText');
+        const iconEl = document.getElementById('statusIcon');
+
+        // 先立即渲染主 UI 避免使用者等待
+        renderMainUI();
 
         try {
             const [rates, tdMsg] = await Promise.all([
@@ -399,14 +339,14 @@ END:VCALENDAR`;
 
             if (statusEl && txtEl) {
                 txtEl.innerText = i18n[state.lang].statusSuccess;
+                if (iconEl) iconEl.innerText = "✅";
                 statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-emerald-900/30 border border-emerald-500/50 text-emerald-300 font-medium tracking-wide flex items-center shadow-inner";
-                statusEl.querySelector('span').innerText = "✅";
             }
         } catch (e) {
             if (statusEl && txtEl) {
                 txtEl.innerText = i18n[state.lang].statusFallback;
+                if (iconEl) iconEl.innerText = "🛡️";
                 statusEl.className = "mb-6 p-3.5 rounded-lg text-sm bg-blue-900/30 border border-blue-500/50 text-blue-300 font-medium tracking-wide flex items-center shadow-inner";
-                statusEl.querySelector('span').innerText = "🛡️";
             }
         } finally {
             renderMainUI();
