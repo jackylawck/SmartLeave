@@ -26,9 +26,10 @@
 * **隱私第一**：無後端資料庫，不蒐集任何個人休假天數或行事曆資訊。
 * **離線支援**：支援 PWA 離線技術，即使在地下鐵或無網路環境下也能隨時開啟查看休假攻略。
 
-### 📜 隱私與合規保障
-* **資訊安全**：所有請假試算與日曆檔案生成均於用戶端瀏覽器內完成，零資料外洩風險。
-* **職業安全與健康 (OSH)**：整合大眾交通即時消息與衛生提示，方便隨時規劃安全出行。
+### 📜 治理與合規聲明 (GRC & Compliance)
+* **隱私保護 (Privacy by Design)**：符合香港 PDPO 與歐盟 GDPR 原則，詳細政策請參閱 [PRIVACY.md](PRIVACY.md)。
+* **AI 治理與透明度**：遵循 EU AI Act 微風險規範、NIST AI RMF 及 ISO/IEC 42001:2023 標準，完整報告請參閱 [AI_GOVERNANCE.md](AI_GOVERNANCE.md)。
+* **職業安全與健康 (OSH)**：整合大眾交通即時消息與衛生提示，協助企業與個人進行安全出行決策。
 
 ---
 
@@ -54,9 +55,10 @@
 * **Privacy by Design**: No backend server or database; zero tracking of personal leave data or calendar events.
 * **Offline Ready**: Built-in PWA Service Worker allows seamless access even in offline environments or underground MTR stations.
 
-### 📜 Compliance & Security
-* **Data Security**: All calculations and ICS calendar file generation occur locally in your browser.
-* **Occupational Safety & Health (OSH)**: Integrated with real-time transit and health alerts for safe travel planning.
+### 📜 Governance & Compliance
+* **Data Privacy (PDPO & GDPR)**: Built strictly on Privacy by Design principles. See [PRIVACY.md](PRIVACY.md) for details.
+* **AI Governance & Transparency**: Aligned with the EU AI Act (Minimal Risk), NIST AI RMF, and ISO/IEC 42001:2023. See [AI_GOVERNANCE.md](AI_GOVERNANCE.md).
+* **Occupational Safety & Health (OSH)**: Integrated with real-time transit and health alerts for risk-informed travel planning.
 
 ---
 
