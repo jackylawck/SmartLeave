@@ -1,77 +1,37 @@
 /**
- * SmartLeave i18n Dictionary
+ * @file config.js
+ * @description SmartLeave System Configuration & City Registry
+ * @author Jacky Law (羅子淇)
  */
-const i18n = {
-    TC: {
-        title: "SmartLeave 智休假",
-        subtitle: "香港請假攻略 & 天氣交通出行助手",
-        lblMode: "使用身份",
-        optEmp: "🏖️ 員工：請假攻略、天氣、交通與健康提示",
-        optHR: "📊 HR / 管理層：連假人手與營運持續提醒",
-        lblYear: "目標年份",
-        optYear2026: "2026 年",
-        optYear2027: "2027 年",
-        statusSuccess: "系統狀態：已連線至香港政府 1823、天文台、運輸署及全球氣象資料庫",
-        statusFallback: "系統狀態：目前為離線模式，已載入預存假期與備用匯率資料",
-        inputAL: "請輸入你想請假的天數 (年假 AL):",
-        btnCalc: "🚀 計算請假方案",
-        cpLabel: "划算指數 (CP值)",
-        cpTooltip: "計算方式：連續放假總天數 ÷ 扣除的年假天數",
-        hrNote: "管理提醒：請留意長假前後的請假重疊情況，並留意運輸署交通消息與天氣狀況，方便彈性安排工作與人手調配。",
-        hrAlert2026: "⚠️ 2026 人手緊張期：4月3日 至 4月12日 (復活節及清明連休 10 天)",
-        hrAlert2027: "⚠️ 2027 人手緊張期：3月26日 至 4月5日 (復活節及清明連休 11 天)",
-        noResult: "目前的年假天數較少，建議單獨請假放鬆！",
-        govTitle: "隱私與安全保障：",
-        govText: "本工具所有運算均在您的瀏覽器內完成（包括日曆下載），您的請假資料絕不會傳送到任何外部伺服器。同時支援離線使用，斷網時也能隨時查看休假攻略。",
-        citySelectLabel: "🌍 目的地預測 (未來 9 天天氣趨勢):",
-        globalWeatherTitle: "🌐 天氣與匯率動態",
-        btnCalendar: "📅 加入手機日曆 (.ics)",
-        esgTitle: "🚦 交通與健康出行提示",
-        trafficNormal: "✅ 運輸署即時消息：目前全港主要幹道及港鐵服務正常。",
-        esgAirport: "✈️ 機場提示: 連假首日為出行高峰，建議提早 3 小時到達機場。",
-        healthAdvisory: "🏥 衛生健康提醒：季節性流感與旅遊健康警示生效，出遊請注意個人衛生與防護。"
-    },
-    EN: {
-        title: "SmartLeave",
-        subtitle: "HK Leave Optimizer & Travel Assistant",
-        lblMode: "I am an...",
-        optEmp: "🏖️ Employee: Leave Guide, Weather, Transit & Health Alerts",
-        optHR: "📊 HR / Manager: Workforce Gap & BCM Alerts",
-        lblYear: "Target Year",
-        optYear2026: "2026",
-        optYear2027: "2027",
-        statusSuccess: "System Status: Connected to HK Gov 1823, HKO, Transport Dept & Global APIs",
-        statusFallback: "System Status: Offline mode active. Loaded pre-saved holiday & exchange rates database",
-        inputAL: "Enter AL Days you want to use:",
-        btnCalc: "🚀 Calculate Best Leave",
-        cpLabel: "Value Ratio",
-        cpTooltip: "Formula: Total Days Off ÷ Required AL Days",
-        hrNote: "Manager Tip: Monitor leave overlap during long weekends and keep an eye on transit updates for flexible work arrangements.",
-        hrAlert2026: "⚠️ 2026 Peak Absence Period: Apr 3 - Apr 12 (Easter 10-day streak)",
-        hrAlert2027: "⚠️ 2027 Peak Absence Period: Mar 26 - Apr 5 (Easter 11-day streak)",
-        noResult: "AL days insufficient for long streaks. Taking single days off is recommended!",
-        govTitle: "Privacy & Security Guarantee:",
-        govText: "All calculations happen locally in your browser (including calendar exports). Your data is never sent to external servers. Works offline seamlessly.",
-        citySelectLabel: "🌍 Select Destination (9-Day Forecast Trend):",
-        globalWeatherTitle: "🌐 Live Weather & Exchange Rate",
-        btnCalendar: "📅 Add to Calendar (.ics)",
-        esgTitle: "🚦 Transit & Health Travel Advisory",
-        trafficNormal: "✅ Transport Dept Update: Major roadways and MTR operating normally.",
-        esgAirport: "✈️ Airport Advisory: High traffic expected on holiday start dates. Early arrival recommended.",
-        healthAdvisory: "🏥 Health Advisory: Seasonal flu alert active. Maintain personal hygiene during travel."
-    }
-};
 
-const CITIES = [
-    { id: "HK", nameTC: "香港 (Hong Kong)", nameEN: "Hong Kong", lat: 22.3193, lng: 114.1694, currency: "HKD" },
-    { id: "SZX", nameTC: "深圳 (Shenzhen)", nameEN: "Shenzhen", lat: 22.5431, lng: 114.0579, currency: "CNY" },
-    { id: "CAN", nameTC: "廣州 (Guangzhou)", nameEN: "Guangzhou", lat: 23.1291, lng: 113.2644, currency: "CNY" },
-    { id: "MAC", nameTC: "澳門 (Macau)", nameEN: "Macau", lat: 22.1987, lng: 113.5439, currency: "MOP" },
-    { id: "SHA", nameTC: "上海 (Shanghai)", nameEN: "Shanghai", lat: 31.2304, lng: 121.4737, currency: "CNY" },
-    { id: "PEK", nameTC: "北京 (Beijing)", nameEN: "Beijing", lat: 39.9042, lng: 116.4074, currency: "CNY" },
+/**
+ * @typedef {Object} CityConfig
+ * @property {string} id - 城市唯一識別碼 (ISO/IATA 代碼)
+ * @property {string} nameTC - 繁體中文名稱
+ * @property {string} nameEN - 英文名稱
+ * @property {number} lat - 緯度座標
+ * @property {number} lng - 經度座標
+ * @property {string} currency - 貨幣代碼 (ISO 4217)
+ */
+
+/** @constant {string[]} 支援的法定貨幣清單 */
+const SUPPORTED_CURRENCIES = Object.freeze([
+    'HKD', 'CNY', 'MOP', 'TWD', 'JPY',
+    'KRW', 'THB', 'SGD', 'GBP', 'EUR',
+    'AUD', 'CAD', 'USD'
+]);
+
+/** @type {CityConfig[]} 目的地氣象與匯率配置資料庫 */
+const CITIES = Object.freeze([
+    { id: "HK", nameTC: "香港 (本地)", nameEN: "Hong Kong (Local)", lat: 22.3193, lng: 114.1694, currency: "HKD" },
+    { id: "SZ", nameTC: "深圳 (Shenzhen)", nameEN: "Shenzhen", lat: 22.5431, lng: 114.0579, currency: "CNY" },
+    { id: "GZ", nameTC: "廣州 (Guangzhou)", nameEN: "Guangzhou", lat: 23.1291, lng: 113.2644, currency: "CNY" },
+    { id: "MO", nameTC: "澳門 (Macau)", nameEN: "Macau", lat: 22.1987, lng: 113.5439, currency: "MOP" },
     { id: "TPE", nameTC: "台北 (Taipei)", nameEN: "Taipei", lat: 25.0330, lng: 121.5654, currency: "TWD" },
     { id: "TYO", nameTC: "東京 (Tokyo)", nameEN: "Tokyo", lat: 35.6762, lng: 139.6503, currency: "JPY" },
     { id: "OSA", nameTC: "大阪 (Osaka)", nameEN: "Osaka", lat: 34.6937, lng: 135.5023, currency: "JPY" },
+    { id: "FUK", nameTC: "福岡 (Fukuoka)", nameEN: "Fukuoka", lat: 33.5904, lng: 130.4017, currency: "JPY" },
+    { id: "OKA", nameTC: "沖繩 (Okinawa)", nameEN: "Okinawa", lat: 26.2124, lng: 127.6809, currency: "JPY" },
     { id: "SEL", nameTC: "首爾 (Seoul)", nameEN: "Seoul", lat: 37.5665, lng: 126.9780, currency: "KRW" },
     { id: "BKK", nameTC: "曼谷 (Bangkok)", nameEN: "Bangkok", lat: 13.7563, lng: 100.5018, currency: "THB" },
     { id: "SIN", nameTC: "新加坡 (Singapore)", nameEN: "Singapore", lat: 1.3521, lng: 103.8198, currency: "SGD" },
@@ -80,4 +40,4 @@ const CITIES = [
     { id: "SYD", nameTC: "悉尼 (Sydney)", nameEN: "Sydney", lat: -33.8688, lng: 151.2093, currency: "AUD" },
     { id: "YVR", nameTC: "溫哥華 (Vancouver)", nameEN: "Vancouver", lat: 49.2827, lng: -123.1207, currency: "CAD" },
     { id: "NYC", nameTC: "紐約 (New York)", nameEN: "New York", lat: 40.7128, lng: -74.0060, currency: "USD" }
-];
+]);
